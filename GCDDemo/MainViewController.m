@@ -19,10 +19,10 @@
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self)
     {
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            _imgView = [[GCDImageView alloc] initWithFrame:CGRectMake(10, 10, 300, 280)];
-//            [self addSubview:_imgView];
-//        });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            _imgView = [[GCDImageView alloc] initWithFrame:CGRectMake(10, 10, 300, 280)];
+            [self addSubview:_imgView];
+        });
     }
     
     return self;
@@ -35,10 +35,10 @@
         //Call GCDAsyncDownloadImage Download Image
     void (^failedCallBack)(void) = ^(void){NSLog(@"download image failed");};
     void (^successdCallBack)(void) = ^(void){NSLog(@"download image success");};
-    self.imgView = [[[GCDImageView alloc] initWithImageWithUrll:CGRectMake(10, 10, 300, 280) imgUrl:self.imgUrl successBlock:successdCallBack failedBlock:failedCallBack] autorelease];
-    [self addSubview:self.imgView];
+//    self.imgView = [[[GCDImageView alloc] initWithImageWithUrll:CGRectMake(10, 10, 300, 280) imgUrl:self.imgUrl successBlock:successdCallBack failedBlock:failedCallBack] autorelease];
+//    [self addSubview:self.imgView];
     
-//    [_imgView getImageWithUrl:self.imgUrl defaultImg:[UIImage imageNamed:@"splash_video_title_slide.png"] successBlock:successdCallBack failedBlock:failedCallBack];
+    [_imgView getImageWithUrl:self.imgUrl defaultImg:[UIImage imageNamed:@"splash_video_title_slide.png"] successBlock:successdCallBack failedBlock:failedCallBack];
     [self.imgView setHidden:NO];
 }
 

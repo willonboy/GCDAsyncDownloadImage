@@ -1,16 +1,29 @@
 //
-//  GCDAsynDownload.m
+//  GCDImageView.m
 //  GCDDemo
 //
-//  Created by willonboy zhang on 12-7-5.
+//  Created by willonboy zhang on 12-7-30.
 //  Copyright (c) 2012年 willonboy.tk. All rights reserved.
 //
 
-#import "GCDAsyncDownloadImage.h"
+#import "GCDImageView.h"
 #import <CommonCrypto/CommonDigest.h>
 
-@implementation UIImageView(GCDImgViewExt)
+
+@implementation GCDImageView
 static  BOOL GCDAsyncDownloadImageCancel = NO;
+
+
+- (void)dealloc 
+{
+    if (_currentDownloadingImgFilePath)
+    {
+        [_currentDownloadingImgFilePath release];
+        _currentDownloadingImgFilePath = nil;
+    }
+
+    [super dealloc];
+}
 
     //对要请求的图片路径进行MD5签名
 - (NSString *)MD5Value:(NSString *)str
@@ -37,18 +50,31 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 }
 
 
-- (void)getImageWithUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg;
+- (id)initWithImageWithUrll:(CGRect)frame imgUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg;
 {
-    [self getImageWithUrl:urlString defaultImg:defaultImg successBlock:NULL failedBlock:NULL];
+    self = [super initWithFrame:frame];
+    if (self)
+    {
+        [self getImageWithUrl:urlString defaultImg:defaultImg successBlock:NULL failedBlock:NULL];
+    }
+    
+    return self;
 }
 
 
-- (void)getImageWithUrl:(NSString *)urlString successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
+- (id)initWithImageWithUrll:(CGRect)frame imgUrl:(NSString *)urlString successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
 {
-     [self getImageWithUrl:urlString defaultImg:NULL successBlock:successBlock failedBlock:failedBlock];
+    self = [super initWithFrame:frame];
+    if (self)
+    {
+        [self getImageWithUrl:urlString defaultImg:NULL successBlock:successBlock failedBlock:failedBlock];
+    }
+    
+    return self;
 }
 
 
+    //这个函数中应该完善self被密集重用时导致图片加载后显示错乱!
 - (void)getImageWithUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -66,6 +92,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         //important 被block实例引用的__block对象不自动增加引用次数 需手动增加引用计数 但像参数urlString是全局的非__block的Objective-C对象就会自动增加引用次数
     __block NSString *imageFilePath = [[self getCacheFile:[self MD5Value:urlString]] retain];
     UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
+    _currentDownloadingImgFilePath = [imageFilePath copy];
     
     if (cachedImg)
     {
@@ -74,12 +101,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         
         if (successBlock != NULL) 
         {
+            NSLog(@"read cached img");
             dispatch_async(dispatch_get_main_queue(), successBlock); 
         }
     }
     else
     {
-    
+        
         __block UIActivityIndicatorView *indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         indicatorView.center = self.center;
         [self addSubview:indicatorView];
@@ -105,13 +133,20 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 [indicatorView release];
                 indicatorView = nil;
             });
-            
+
             if (img) 
             { 
                 [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    self.image = img;
+                    if (!_currentDownloadingImgFilePath || [_currentDownloadingImgFilePath isEqualToString:imageFilePath]) 
+                    {
+                        self.image = img;
+                    }
+                    else
+                    {
+                        NSLog(@"currentDownloadingImgFilePath %@, imageFilePath %@", _currentDownloadingImgFilePath, imageFilePath);
+                    }
                 });
                 
                 if (successBlock != NULL) 
@@ -120,7 +155,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 }
             }
             else
-            {
+            {              
                 if (failedBlock != NULL) 
                 {
                     dispatch_async(dispatch_get_main_queue(), failedBlock); 
@@ -144,13 +179,4 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 }
 
 @end
-
-
-
-
-
-
-
-
-
 

@@ -7,8 +7,24 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "GCDImageView.h"
 
-@interface MainViewController : UIViewController
+@interface myCell : UITableViewCell
+{
+    GCDImageView    *_imgView;
+}
+@property(nonatomic, retain)GCDImageView    *imgView;
+@property(nonatomic, retain)NSString        *imgUrl;
+
+@end
+
+
+
+
+@interface MainViewController : UIViewController<UITableViewDelegate, UITableViewDataSource>
+{
+    UITableView         *_tableView;
+}
 
 @property(nonatomic, retain) IBOutlet UIImageView *imgView;
 

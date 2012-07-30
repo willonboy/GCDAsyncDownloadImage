@@ -31,6 +31,6 @@
 
 - (void)getImageWithUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
 
-- (void)cancelDownload;
++ (void)cancelDownload;
 
 @end

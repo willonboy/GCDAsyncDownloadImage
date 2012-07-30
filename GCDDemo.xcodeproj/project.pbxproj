@@ -16,6 +16,7 @@
 		4910DCB115A57F4100F0F3BA /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4910DCAF15A57F4100F0F3BA /* MainViewController.m */; };
 		4910DCB215A57F4100F0F3BA /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4910DCB015A57F4100F0F3BA /* MainViewController.xib */; };
 		4910DCB715A59AF900F0F3BA /* readonly-dialog-icon-hello.png in Resources */ = {isa = PBXBuildFile; fileRef = 4910DCB615A59AF900F0F3BA /* readonly-dialog-icon-hello.png */; };
+		492F983E15C62627008314A4 /* GCDImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 492F983D15C62627008314A4 /* GCDImageView.m */; };
 		49FC519415A6C79C005EE435 /* GCDAsyncDownloadImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 49FC519315A6C79C005EE435 /* GCDAsyncDownloadImage.m */; };
 		49FC51A615A6D122005EE435 /* splash_video_title_slide.png in Resources */ = {isa = PBXBuildFile; fileRef = 49FC51A515A6D122005EE435 /* splash_video_title_slide.png */; };
 /* End PBXBuildFile section */
@@ -35,6 +36,8 @@
 		4910DCAF15A57F4100F0F3BA /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		4910DCB015A57F4100F0F3BA /* MainViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainViewController.xib; sourceTree = "<group>"; };
 		4910DCB615A59AF900F0F3BA /* readonly-dialog-icon-hello.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "readonly-dialog-icon-hello.png"; sourceTree = "<group>"; };
+		492F983C15C62627008314A4 /* GCDImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDImageView.h; sourceTree = "<group>"; };
+		492F983D15C62627008314A4 /* GCDImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDImageView.m; sourceTree = "<group>"; };
 		49FC519215A6C79C005EE435 /* GCDAsyncDownloadImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncDownloadImage.h; sourceTree = "<group>"; };
 		49FC519315A6C79C005EE435 /* GCDAsyncDownloadImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncDownloadImage.m; sourceTree = "<group>"; };
 		49FC51A515A6D122005EE435 /* splash_video_title_slide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = splash_video_title_slide.png; sourceTree = "<group>"; };
@@ -113,6 +116,8 @@
 			children = (
 				49FC519215A6C79C005EE435 /* GCDAsyncDownloadImage.h */,
 				49FC519315A6C79C005EE435 /* GCDAsyncDownloadImage.m */,
+				492F983C15C62627008314A4 /* GCDImageView.h */,
+				492F983D15C62627008314A4 /* GCDImageView.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -186,6 +191,7 @@
 				4910DCA415A53F1D00F0F3BA /* AppDelegate.m in Sources */,
 				4910DCB115A57F4100F0F3BA /* MainViewController.m in Sources */,
 				49FC519415A6C79C005EE435 /* GCDAsyncDownloadImage.m in Sources */,
+				492F983E15C62627008314A4 /* GCDImageView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,11 +255,15 @@
 		4910DCA815A53F1D00F0F3BA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: trojan zhang (7K797J24DD)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: trojan zhang (7K797J24DD)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "GCDDemo/GCDDemo-Prefix.pch";
 				INFOPLIST_FILE = "GCDDemo/GCDDemo-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "34314CD6-E45F-4BBC-A5A7-3AB0C30482DE";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "34314CD6-E45F-4BBC-A5A7-3AB0C30482DE";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -261,11 +271,15 @@
 		4910DCA915A53F1D00F0F3BA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: trojan zhang (7K797J24DD)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: trojan zhang (7K797J24DD)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "GCDDemo/GCDDemo-Prefix.pch";
 				INFOPLIST_FILE = "GCDDemo/GCDDemo-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "34314CD6-E45F-4BBC-A5A7-3AB0C30482DE";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "34314CD6-E45F-4BBC-A5A7-3AB0C30482DE";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

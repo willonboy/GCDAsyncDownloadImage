@@ -50,7 +50,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 }
 
 
-- (id)initWithImageWithUrll:(CGRect)frame imgUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg;
+- (id)initWithImageWithUrl:(CGRect)frame imgUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg;
 {
     self = [super initWithFrame:frame];
     if (self)
@@ -62,7 +62,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 }
 
 
-- (id)initWithImageWithUrll:(CGRect)frame imgUrl:(NSString *)urlString successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
+- (id)initWithImageWithUrl:(CGRect)frame imgUrl:(NSString *)urlString successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
 {
     self = [super initWithFrame:frame];
     if (self)

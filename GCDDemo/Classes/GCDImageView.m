@@ -74,7 +74,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 }
 
 
-    //这个函数中应该完善self被密集重用时导致图片加载后显示错乱!
+    //函数中完善self被密集重用时导致图片加载后显示错乱
 - (void)getImageWithUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];

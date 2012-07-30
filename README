@@ -1,2 +1,6 @@
 GCDAsyncDownloadImage is a lightweight download & cache image tool, it's use GCD. It's simple but strong.
+
+You can use GCDAsyncDownloadImage Or GCDImageView. I'am suggest you use GCDImageView.
+
+
 http://www.willonboy.tk

@@ -106,11 +106,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     }
     else
     {
-        
-        __block UIActivityIndicatorView *indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        indicatorView.center = self.center;
-        [self addSubview:indicatorView];
-        [indicatorView startAnimating];
+        if (!indicatorView) 
+        {
+            indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            indicatorView.center = self.center;
+            [self addSubview:indicatorView];
+            [indicatorView startAnimating];
+        }
         
             //避免retain self
         __block UIImageView *selfImgView = self;
@@ -128,16 +130,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             }
             
             UIImage *img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]]];
-            
-                //下载结束 停止风火轮
-            dispatch_async(dispatch_get_main_queue(), ^{
-                
-                [indicatorView removeFromSuperview];
-                [indicatorView stopAnimating];
-                [indicatorView release];
-                indicatorView = nil;
-            });
-
             if (img) 
             { 
                 [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
@@ -150,6 +142,12 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                     if (selfImgView)
                     {
                         dispatch_async(dispatch_get_main_queue(), ^{
+                                //下载结束 停止风火轮
+                            [indicatorView removeFromSuperview];
+                            [indicatorView stopAnimating];
+                            [indicatorView release];
+                            indicatorView = nil;
+                            
                             selfImgView.image = img;
                         });
                     }

@@ -27,6 +27,7 @@
 {
         //防止陷入 retain Cycle
     __block NSString    *_currentDownloadingImgFilePath;
+    __block UIActivityIndicatorView *indicatorView ;
 }
 
 

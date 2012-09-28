@@ -89,22 +89,19 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         self.image = defaultImg;
     }
     
-        //important 被block实例引用的__block对象不自动增加引用次数 需手动增加引用计数 但像参数urlString是全局的非__block的Objective-C对象就会自动增加引用次数
-    __block NSString *imageFilePath = [[self getCacheFile:[self MD5Value:urlString]] retain];
+    NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
     UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
     _currentDownloadingImgFilePath = [imageFilePath copy];
-        //防止陷入 retain Cycle
-    NSString *blockUseCurrentDownloadingImgPath = _currentDownloadingImgFilePath;
+    
     
     if (cachedImg)
     {
-        [imageFilePath release];
         self.image = cachedImg;
         
         if (successBlock != NULL) 
         {
             NSLog(@"read cached img");
-            dispatch_async(dispatch_get_main_queue(), successBlock); 
+            successBlock();
         }
     }
     else
@@ -115,10 +112,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         [self addSubview:indicatorView];
         [indicatorView startAnimating];
         
+            //避免retain self
         __block UIImageView *selfImgView = self;
         
         dispatch_queue_t downloadQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         void (^downloadBlock)(void) = ^(void){
+            
+            NSString *blockUseCurrentDownloadingImgPath = [imageFilePath copy];
             
             if (GCDAsyncDownloadImageCancel) 
             {
@@ -141,20 +141,22 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             { 
                 [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
                 
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (!blockUseCurrentDownloadingImgPath || [blockUseCurrentDownloadingImgPath isEqualToString:imageFilePath]) 
+                NSLog(@"currentDownloadingImgFilePath %@, imageFilePath %@", blockUseCurrentDownloadingImgPath, _currentDownloadingImgFilePath);
+                    //当UIImageView被重用时,_currentDownloadingImgFilePath将会被重新赋值并且在block有体显(值发生改变),但blockUseCurrentDownloadingImgPath是block变量,它一直不变
+                    //所以用此来判断是否被重用了,下载的图是否是当前重用时要下载的图
+                if (!_currentDownloadingImgFilePath || [_currentDownloadingImgFilePath isEqualToString:blockUseCurrentDownloadingImgPath]) 
+                {
+                    if (selfImgView)
                     {
-                        if (selfImgView)
-                        {
+                        dispatch_async(dispatch_get_main_queue(), ^{
                             selfImgView.image = img;
-                        }
+                        });
                     }
                     else
                     {
-                        NSLog(@"currentDownloadingImgFilePath %@, imageFilePath %@", blockUseCurrentDownloadingImgPath, imageFilePath);
+                        NSLog(@"imgview released");
                     }
-                });
-                
+                }                
                     //嵌套的block会被copy
                 if (successBlock != NULL) 
                 {
@@ -169,15 +171,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                     dispatch_async(dispatch_get_main_queue(), failedBlock); 
                 }
             }
-            
-            [imageFilePath release];
         };
-        
+            //开始下载
         dispatch_async(downloadQueue, downloadBlock);
-        
-        [pool drain];
-        pool = nil;
     }
+    
+    [pool drain];
+    pool = nil;
 }
 
 

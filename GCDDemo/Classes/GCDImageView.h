@@ -6,11 +6,27 @@
 //  Copyright (c) 2012年 willonboy.tk. All rights reserved.
 //
 
+
+/*
+ 引用方式:
+ #import "GCDImageView.h"
+ 
+ GCDImageView    *_imgView = [[GCDImageView alloc] initWithFrame:CGRectMake(10, 10, 300, 280)];
+ void (^failedCallBack)(void) = ^(void){NSLog(@"download image failed");};
+ void (^successdCallBack)(void)  = ^(void){NSLog(@"download image success");};
+ [_imgView getImageWithUrl:self.imgUrl defaultImg:[UIImage imageNamed:@"default.png"] successBlock:successdCallBack failedBlock:failedCallBack];
+ 
+ */
+
+
+
+
 #import <UIKit/UIKit.h>
 
 @interface GCDImageView : UIImageView
 {
-    NSString    *_currentDownloadingImgFilePath;
+        //防止陷入 retain Cycle
+    __block NSString    *_currentDownloadingImgFilePath;
 }
 
 

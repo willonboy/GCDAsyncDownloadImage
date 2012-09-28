@@ -85,6 +85,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         [self addSubview:indicatorView];
         [indicatorView startAnimating];
         
+        __block UIImageView *selfImgView = self;
         
         dispatch_queue_t downloadQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         void (^downloadBlock)(void) = ^(void){
@@ -111,9 +112,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    self.image = img;
+                    if (selfImgView)
+                    {
+                        selfImgView.image = img;
+                    }
                 });
                 
+                    //嵌套的block会被copy
                 if (successBlock != NULL) 
                 {
                     dispatch_async(dispatch_get_main_queue(), successBlock); 
@@ -121,6 +126,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             }
             else
             {
+                    //嵌套的block会被copy
                 if (failedBlock != NULL) 
                 {
                     dispatch_async(dispatch_get_main_queue(), failedBlock); 

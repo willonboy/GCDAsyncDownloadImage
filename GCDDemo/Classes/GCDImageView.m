@@ -93,6 +93,8 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     __block NSString *imageFilePath = [[self getCacheFile:[self MD5Value:urlString]] retain];
     UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
     _currentDownloadingImgFilePath = [imageFilePath copy];
+        //防止陷入 retain Cycle
+    NSString *blockUseCurrentDownloadingImgPath = _currentDownloadingImgFilePath;
     
     if (cachedImg)
     {
@@ -113,6 +115,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         [self addSubview:indicatorView];
         [indicatorView startAnimating];
         
+        __block UIImageView *selfImgView = self;
         
         dispatch_queue_t downloadQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         void (^downloadBlock)(void) = ^(void){
@@ -139,23 +142,28 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    if (!_currentDownloadingImgFilePath || [_currentDownloadingImgFilePath isEqualToString:imageFilePath]) 
+                    if (!blockUseCurrentDownloadingImgPath || [blockUseCurrentDownloadingImgPath isEqualToString:imageFilePath]) 
                     {
-                        self.image = img;
+                        if (selfImgView)
+                        {
+                            selfImgView.image = img;
+                        }
                     }
                     else
                     {
-                        NSLog(@"currentDownloadingImgFilePath %@, imageFilePath %@", _currentDownloadingImgFilePath, imageFilePath);
+                        NSLog(@"currentDownloadingImgFilePath %@, imageFilePath %@", blockUseCurrentDownloadingImgPath, imageFilePath);
                     }
                 });
                 
+                    //嵌套的block会被copy
                 if (successBlock != NULL) 
                 {
                     dispatch_async(dispatch_get_main_queue(), successBlock); 
                 }
             }
             else
-            {              
+            {       
+                    //嵌套的block会被copy       
                 if (failedBlock != NULL) 
                 {
                     dispatch_async(dispatch_get_main_queue(), failedBlock); 

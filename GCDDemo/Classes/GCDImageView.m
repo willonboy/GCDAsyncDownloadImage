@@ -122,6 +122,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             
             if (GCDAsyncDownloadImageCancel) 
             {
+                [blockUseCurrentDownloadingImgPath release];
                 NSLog(@"Download Canceled");
                 return;
             }
@@ -171,6 +172,8 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                     dispatch_async(dispatch_get_main_queue(), failedBlock); 
                 }
             }
+            
+            [blockUseCurrentDownloadingImgPath release];
         };
             //开始下载
         dispatch_async(downloadQueue, downloadBlock);

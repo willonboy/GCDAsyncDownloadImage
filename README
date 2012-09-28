@@ -3,4 +3,16 @@ GCDAsyncDownloadImage is a lightweight download & cache image tool, it's use GCD
 You can use GCDAsyncDownloadImage Or GCDImageView. I'am suggest you use GCDImageView.
 
 
-http://www.willonboy.tk
+引用方式:
+ #import "GCDImageView.h"
+ 
+ GCDImageView    *_imgView = [[GCDImageView alloc] initWithFrame:CGRectMake(...)];
+ void (^failedCallBack)(void) = ^(void){NSLog(@"download image failed");};
+ void (^successdCallBack)(void)  = ^(void){NSLog(@"download image success");};
+ [_imgView getImageWithUrl:imgurl defaultImg:[UIImage imageNamed:@"default.png"] successBlock:successdCallBack failedBlock:failedCallBack];
+ 
+
+
+Website:http://www.willonboy.tk
+QQ:962286684
+SKYPE:willonboy.zhang

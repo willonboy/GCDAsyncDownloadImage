@@ -149,7 +149,15 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                             [indicatorView release];
                             indicatorView = nil;
                             
-                            selfImgView.image = img;
+                            [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
+                                
+                                selfImgView.image = img;
+                                [UIView animateWithDuration:0.4 animations:^{
+                                    
+                                    selfImgView.alpha = 1.0f;
+                                }];
+                            }];
+                            
                         });
                     }
                     else

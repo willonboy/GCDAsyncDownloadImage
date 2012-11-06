@@ -112,7 +112,16 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 if (selfImgView)
                 {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        selfImgView.image = img;
+                        
+                        [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
+                            
+                            selfImgView.image = img;
+                            [UIView animateWithDuration:0.4 animations:^{
+                                
+                                selfImgView.alpha = 1.0f;
+                            }];
+                        }];
+                        
                     });
                 }
                 

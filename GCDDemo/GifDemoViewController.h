@@ -7,7 +7,23 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SCGIFImageView.h"
 
-@interface GifDemoViewController : UIViewController
+@interface GifCell : UITableViewCell
+{
+    SCGIFImageView    *_imgView;
+}
+@property(nonatomic, retain)SCGIFImageView *imgView;
+@property(nonatomic, retain)NSString       *imgUrl;
+
+@end
+
+
+
+
+@interface GifDemoViewController : UIViewController<UITableViewDelegate, UITableViewDataSource>
+{
+    UITableView         *_tableView;
+}
 
 @end

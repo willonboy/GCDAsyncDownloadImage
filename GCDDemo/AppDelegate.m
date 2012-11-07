@@ -8,6 +8,9 @@
 
 #import "AppDelegate.h"
 #import "MainViewController.h"
+#import "Main2ViewController.h"
+#import "GifDemoViewController.h"
+#import "GifViewController.h"
 
 @implementation AppDelegate
 
@@ -22,14 +25,33 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-    // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     
-    MainViewController *mainVC = [[MainViewController alloc] init];
+        //use GCDImageView Demo
+//    MainViewController *mainVC = [[MainViewController alloc] init];
+//    self.window.rootViewController = mainVC;
+//    [mainVC release];
+//    mainVC = nil;
+    
+        //use UIImageView(GCDImgViewExt) Demo
+//    Main2ViewController *mainVC = [[Main2ViewController alloc] init];
+//    self.window.rootViewController = mainVC;
+//    [mainVC release];
+//    mainVC = nil;
+    
+    
+        //use GCD Async Download Gif image Demo
+    GifDemoViewController *mainVC = [[GifDemoViewController alloc] init];
     self.window.rootViewController = mainVC;
     [mainVC release];
     mainVC = nil;
+    
+    
+//    GifViewController *mainVC = [[GifViewController alloc] init];
+//    self.window.rootViewController = mainVC;
+//    [mainVC release];
+//    mainVC = nil;
     
     
 //    dispatch_queue_t queue = dispatch_queue_create("demoqueue", NULL);

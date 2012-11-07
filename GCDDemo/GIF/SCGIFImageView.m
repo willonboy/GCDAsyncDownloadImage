@@ -24,17 +24,76 @@
 @implementation SCGIFImageView
 @synthesize GIF_frames;
 
-+ (BOOL)isGifImage:(NSData*)imageData {
+    //add by william 2012-11-7
+static  BOOL GCDAsyncDownloadImageCancel = NO;
+
+- (void)initAnimateDisplayGifDispathQueue
+{
+    if (!animateDisplayGifQueue)
+    {
+        animateDisplayGifQueue = dispatch_queue_create("www.willonboy.tk.animateDisplayGifQueue", 0);
+    }
+}
+
+    //add by william 2012-11-7
+- (id)init
+{
+    self = [super init];
+    if (self)
+    {
+        [self initAnimateDisplayGifDispathQueue];
+    }
+    return self;
+}
+
+    //add by william 2012-11-7
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self)
+    {
+        [self initAnimateDisplayGifDispathQueue];
+    }
+    return self;
+}
+
+    //add by william 2012-11-7
+- (id)initWithImage:(UIImage *)image
+{
+    self = [super initWithImage:image];
+    if (self)
+    {
+        [self initAnimateDisplayGifDispathQueue];
+    }
+    return self;
+}
+
+    //add by william 2012-11-7
+- (id)initWithImage:(UIImage *)image highlightedImage:(UIImage *)highlightedImage
+{
+    self = [super initWithImage:image highlightedImage:highlightedImage];
+    if (self)
+    {
+        [self initAnimateDisplayGifDispathQueue];
+    }
+    return self;
+}
+
++ (BOOL)isGifImage:(NSData*)imageData
+{
 	const char* buf = (const char*)[imageData bytes];
-	if (buf[0] == 0x47 && buf[1] == 0x49 && buf[2] == 0x46 && buf[3] == 0x38) {
+	if (buf[0] == 0x47 && buf[1] == 0x49 && buf[2] == 0x46 && buf[3] == 0x38)
+    {
 		return YES;
 	}
 	return NO;
 }
 
-+ (NSMutableArray*)getGifFrames:(NSData*)gifImageData {
++ (NSMutableArray*)getGifFrames:(NSData*)gifImageData
+{
 	SCGIFImageView* gifImageView = [[SCGIFImageView alloc] initWithGIFData:gifImageData];
-	if (!gifImageView) {
+	if (!gifImageView)
+    {
 		return nil;
 	}
 	
@@ -44,54 +103,105 @@
 	return gifFrames;
 }
 
-- (id)initWithGIFFile:(NSString*)gifFilePath {
+- (id)initWithGIFFile:(NSString*)gifFilePath
+{
 	NSData* imageData = [NSData dataWithContentsOfFile:gifFilePath];
 	return [self initWithGIFData:imageData];
 }
 
-- (id)initWithGIFData:(NSData*)gifImageData {
-	if (gifImageData.length < 4) {
-		return nil;
-	}
-	
-	if (![SCGIFImageView isGifImage:gifImageData]) {
-		UIImage* image = [UIImage imageWithData:gifImageData];
-		return [super initWithImage:image];
-	}
-	
-	[self decodeGIF:gifImageData];
-	
-	if (GIF_frames.count <= 0) {
-		UIImage* image = [UIImage imageWithData:gifImageData];
-		return [super initWithImage:image];
-	}
-	
+    //changed by william 2012-11-7
+- (id)initWithGIFData:(NSData*)gifImageData
+{
+    if (gifImageData.length < 4)
+    {
+        return nil;
+    }
+    
+    if (![SCGIFImageView isGifImage:gifImageData])
+    {
+        UIImage* image = [UIImage imageWithData:gifImageData];
+        return [super initWithImage:image];
+    }
+    
 	self = [super init];
-	if (self) {
-		[self loadImageData];
+	if (self)
+    {
+        [self initAnimateDisplayGifDispathQueue];
+        
+        [self decodeGIF:gifImageData];
+        
+        if (GIF_frames.count <= 0)
+        {
+            UIImage* image = [UIImage imageWithData:gifImageData];
+            return [super initWithImage:image];
+        }
+        
+        [self loadImageData];
 	}
 	
 	return self;
 }
 
-- (void)setGIF_frames:(NSMutableArray *)gifFrames {
+    //add by william 2012-11-7
+- (void)loadImageByImageData:(NSData *)gifImageData
+{
+    if (gifImageData.length < 4)
+    {
+        return;
+    }
+    
+    if (![SCGIFImageView isGifImage:gifImageData])
+    {
+        UIImage* image = [UIImage imageWithData:gifImageData];
+        self.image = image;
+        return;
+    }
+    
+    [self decodeGIF:gifImageData];
+    
+    if (GIF_frames.count <= 0)
+    {
+        UIImage* image = [UIImage imageWithData:gifImageData];
+        self.image = image;
+        return;
+    }
+    
+    [self loadImageData];
+    
+}
+
+- (void)setGIF_frames:(NSMutableArray *)gifFrames
+{
 	[gifFrames retain];
 	
-	if (GIF_frames) {
+	if (GIF_frames)
+    {
 		[GIF_frames release];
 	}
 	GIF_frames = gifFrames;
 	
-	[self loadImageData];
+    [self loadImageData];
 }
 
-- (void)loadImageData {
+- (void)loadImageData
+{
 	// Add all subframes to the animation
 	NSMutableArray *array = [[NSMutableArray alloc] init];
 	for (NSUInteger i = 0; i < [GIF_frames count]; i++)
-	{		
-		[array addObject: [self getFrameAsImageAtIndex:i]];
+	{
+            //changed by william 2012-11-7
+            //[array addObject: [self getFrameAsImageAtIndex:i]];
+        if ([self getFrameAsImageAtIndex:i])
+        {
+            [array addObject: [self getFrameAsImageAtIndex:i]];
+        }
+        
 	}
+        //add by william 2012-11-7
+    if ([array count] < 1)
+    {
+        return;
+    }
 	
 	NSMutableArray *overlayArray = [[NSMutableArray alloc] init];
 	UIImage *firstImage = [array objectAtIndex:0];
@@ -153,7 +263,8 @@
 		CGContextRestoreGState(ctx);
 		
 		//delay must larger than 0, the minimum delay in firefox is 10.
-		if (frame.delay <= 0) {
+		if (frame.delay <= 0)
+        {
 			frame.delay = 10;
 		}
 		[overlayArray addObject:UIGraphicsGetImageFromCurrentImageContext()];
@@ -194,30 +305,33 @@
 		i++;
 	}
 	UIGraphicsEndImageContext();
-	
+    
 	[self setImage:[overlayArray objectAtIndex:0]];
-	[self setAnimationImages:overlayArray];
-	
-	[overlayArray release];
-	[array release];
-	
-	// Count up the total delay, since Cocoa doesn't do per frame delays.
-	double total = 0;
-	for (AnimatedGifFrame *frame in GIF_frames) {
-		total += frame.delay;
-	}
-	
-	// GIFs store the delays as 1/100th of a second,
-	// UIImageViews want it in seconds.
-	[self setAnimationDuration:total/100];
-	
-	// Repeat infinite
-	[self setAnimationRepeatCount:0];
-	
-	[self startAnimating];
+    [self setAnimationImages:overlayArray];
+    
+    [overlayArray release];
+    [array release];
+    
+        // Count up the total delay, since Cocoa doesn't do per frame delays.
+    double total = 0;
+    for (AnimatedGifFrame *frame in GIF_frames)
+    {
+        total += frame.delay;
+    }
+    
+        // GIFs store the delays as 1/100th of a second,
+        // UIImageViews want it in seconds.
+    [self setAnimationDuration:total/100];
+    
+        // Repeat infinite
+    [self setAnimationRepeatCount:0];
+    
+    [self startAnimating];
+    
 }
 
-- (void)dealloc {
+- (void)dealloc
+{
     if (GIF_buffer != nil)
     {
 	    [GIF_buffer release];
@@ -234,11 +348,14 @@
     }
     
 	[GIF_frames release];
+    
+    dispatch_release(animateDisplayGifQueue);
 	
 	[super dealloc];
 }
 	 
-- (void) decodeGIF:(NSData *)GIFData {
+- (void) decodeGIF:(NSData *)GIFData
+{
 	GIF_pointer = GIFData;
     
     if (GIF_buffer != nil)
@@ -325,7 +442,8 @@
     GIF_global = nil;
 }
 
-- (void) GIFReadExtensions {
+- (void) GIFReadExtensions
+{
 	// 21! But we still could have an Application Extension,
 	// so we want to check for the full signature.
 	unsigned char cur[1], prev[1];
@@ -374,7 +492,8 @@
 	}	
 }
 
-- (void) GIFReadDescriptor {
+- (void) GIFReadDescriptor
+{
 	[self GIFGetBytes:9];
     
     // Deep copy
@@ -486,7 +605,8 @@
 	frame.data = GIF_string;
 }
 
-- (bool) GIFGetBytes:(int)length {
+- (bool) GIFGetBytes:(int)length
+{
     if (GIF_buffer != nil)
     {
         [GIF_buffer release]; // Release old buffer
@@ -505,7 +625,8 @@
 	}
 }
 
-- (bool) GIFSkipBytes: (int) length {
+- (bool) GIFSkipBytes: (int) length
+{
     if ((NSInteger)[GIF_pointer length] >= dataPointer + length)
     {
         dataPointer += length;
@@ -517,7 +638,8 @@
     }
 }
 
-- (NSData*) getFrameAsDataAtIndex:(int)index {
+- (NSData*) getFrameAsDataAtIndex:(int)index
+{
 	if (index < (NSInteger)[GIF_frames count])
 	{
 		return ((AnimatedGifFrame *)[GIF_frames objectAtIndex:index]).data;
@@ -528,7 +650,8 @@
 	}
 }
 
-- (UIImage*) getFrameAsImageAtIndex:(int)index {
+- (UIImage*) getFrameAsImageAtIndex:(int)index
+{
     NSData *frameData = [self getFrameAsDataAtIndex: index];
     UIImage *image = nil;
     
@@ -538,6 +661,159 @@
     }
     
     return image;
+}
+
+
+
+    //add by william 2012-11-7
+    //函数中完善self被密集重用时导致图片加载后显示错乱
+- (void)getImageWithUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
+{
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    
+    
+    if (!urlString || urlString.length < 1)
+    {
+        return;
+    }
+    
+    self.image = defaultImg;
+    
+    NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
+    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
+    _currentDownloadingImgFilePath = [imageFilePath copy];
+    
+    if (cacheImgData)
+    {
+        NSLog(@"isGifImage %@", [SCGIFImageView isGifImage:cacheImgData] ? @"YES" : @"NO");
+        if (![SCGIFImageView isGifImage:cacheImgData])
+        {
+            UIImage *cachedImg = [UIImage imageWithData:cacheImgData];
+            self.image = cachedImg;
+        }
+        else
+        {
+            [self loadImageByImageData:cacheImgData];
+        }
+        
+        if (successBlock != NULL)
+        {
+            NSLog(@"read cached img");
+            successBlock();
+        }
+    }
+    else
+    {
+        if (!indicatorView)
+        {
+            indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            indicatorView.center = self.center;
+            [self addSubview:indicatorView];
+            [indicatorView startAnimating];
+        }
+        
+            //避免retain self
+        __block SCGIFImageView *selfImgView = self;
+        
+        dispatch_queue_t downloadQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+        void (^downloadBlock)(void) = ^(void){
+            
+            NSString *blockUseCurrentDownloadingImgPath = [imageFilePath copy];
+            
+            if (GCDAsyncDownloadImageCancel)
+            {
+                [blockUseCurrentDownloadingImgPath release];
+                NSLog(@"Download Canceled");
+                return;
+            }
+            
+            NSData *imageData = [NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]];
+            UIImage *img = nil;
+            
+            if (imageData)
+            {
+                BOOL isGifImg = [SCGIFImageView isGifImage:imageData];
+                    //if it's not gif image
+                if (!isGifImg)
+                {
+                    img = [UIImage imageWithData:imageData];
+                    if (img)
+                    {
+                        [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
+                    }
+                }
+                else
+                {
+                    [imageData writeToFile:imageFilePath atomically:YES];
+                }
+                
+                NSLog(@"currentDownloadingImgFilePath %@, imageFilePath %@", blockUseCurrentDownloadingImgPath, _currentDownloadingImgFilePath);
+                    //当UIImageView被重用时,_currentDownloadingImgFilePath将会被重新赋值并且在block有体显(值发生改变),但blockUseCurrentDownloadingImgPath是block变量,它一直不变
+                    //所以用此来判断是否被重用了,下载的图是否是当前重用时要下载的图
+                if (!_currentDownloadingImgFilePath || [_currentDownloadingImgFilePath isEqualToString:blockUseCurrentDownloadingImgPath])
+                {
+                    if (selfImgView)
+                    {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                                //下载结束 停止风火轮
+                            [indicatorView removeFromSuperview];
+                            [indicatorView stopAnimating];
+                            [indicatorView release];
+                            indicatorView = nil;
+                            
+                            if (!isGifImg)
+                            {
+                                [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
+                                    
+                                    selfImgView.image = img;
+                                    [UIView animateWithDuration:0.4 animations:^{
+                                        
+                                        selfImgView.alpha = 1.0f;
+                                    }];
+                                }];
+                            }
+                            else
+                            {
+                                [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
+                                    
+                                    [selfImgView loadImageByImageData:imageData];
+                                    [UIView animateWithDuration:0.4 animations:^{
+                                        
+                                        selfImgView.alpha = 1.0f;
+                                    }];
+                                }];
+                            }
+                            
+                        });
+                    }
+                    else
+                    {
+                        NSLog(@"imgview released");
+                    }
+                }
+                    //嵌套的block会被copy
+                if (successBlock != NULL)
+                {
+                    dispatch_async(dispatch_get_main_queue(), successBlock);
+                }
+            }
+            else
+            {
+                    //嵌套的block会被copy
+                if (failedBlock != NULL)
+                {
+                    dispatch_async(dispatch_get_main_queue(), failedBlock);
+                }
+            }
+            
+            [blockUseCurrentDownloadingImgPath release];
+        };
+            //开始下载
+        dispatch_async(downloadQueue, downloadBlock);
+    }
+    
+    [pool drain];
+    pool = nil;
 }
 
 

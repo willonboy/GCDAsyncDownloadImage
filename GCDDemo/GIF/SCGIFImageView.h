@@ -12,6 +12,8 @@
 */
  
 #import <UIKit/UIKit.h>
+    //add by william 2012-11-7
+#import "GCDImageView.h"
 
 @interface AnimatedGifFrame : NSObject
 {
@@ -30,7 +32,8 @@
 
 @end
 
-@interface SCGIFImageView : UIImageView {
+@interface SCGIFImageView : GCDImageView //add by william 2012-11-7
+{
 	NSData *GIF_pointer;
 	NSMutableData *GIF_buffer;
 	NSMutableData *GIF_screen;
@@ -44,6 +47,8 @@
 	int animatedGifDelay;
 	
 	int dataPointer;
+    
+    dispatch_queue_t animateDisplayGifQueue;
 }
 @property (nonatomic, retain) NSMutableArray *GIF_frames;
 

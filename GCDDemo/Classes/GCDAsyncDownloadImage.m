@@ -85,6 +85,8 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         
             //避免retain self
         __block UIImageView *selfImgView = self;
+            //主要是用于区别多次重用的UIImageView(如果UIImageView频繁重用请在重用时重新设置tag属性值)
+        long imageViewTag = self.tag;
         
         dispatch_queue_t downloadQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         void (^downloadBlock)(void) = ^(void){
@@ -96,23 +98,23 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             }
             
             UIImage *img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]]];
-            
-                //下载结束 停止风火轮
-            dispatch_async(dispatch_get_main_queue(), ^{
-                
-                [indicatorView removeFromSuperview];
-                [indicatorView stopAnimating];
-                [indicatorView release];
-                indicatorView = nil;
-            });
-            
+                        
             if (img) 
             { 
                 [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
-                if (selfImgView)
+                
+                NSLog(@"selfImgView.tag %ld== imageViewTag %ld", selfImgView.tag, imageViewTag);
+                
+                if (selfImgView && selfImgView.tag == imageViewTag)
                 {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         
+                            //下载结束 停止风火轮
+                        [indicatorView removeFromSuperview];
+                        [indicatorView stopAnimating];
+                        [indicatorView release];
+                        indicatorView = nil;
+
                         [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
                             
                             selfImgView.image = img;

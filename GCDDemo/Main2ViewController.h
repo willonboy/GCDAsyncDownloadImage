@@ -7,7 +7,24 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "GCDAsyncDownloadImage.h"
 
-@interface Main2ViewController : UIViewController
+
+@interface my2Cell : UITableViewCell
+{
+    UIImageView    *_imgView;
+}
+@property(nonatomic, retain)UIImageView    *imgView;
+@property(nonatomic, retain)NSString       *imgUrl;
+
+@end
+
+
+
+
+@interface Main2ViewController : UIViewController<UITableViewDelegate, UITableViewDataSource>
+{
+    UITableView         *_tableView;
+}
 
 @end

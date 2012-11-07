@@ -29,6 +29,11 @@
     __block NSString    *_currentDownloadingImgFilePath;
     __block UIActivityIndicatorView *indicatorView ;
 }
+    //对要请求的图片路径进行MD5签名
+- (NSString *)MD5Value:(NSString *)str;
+
+    //获取Caches目录下的文件
+- (NSString *)getCacheFile:(NSString *)file;
 
 
 - (id)initWithImageWithUrl:(CGRect)frame imgUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg;

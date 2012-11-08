@@ -28,11 +28,7 @@
 
 - (void)layoutSubviews
 {
-    static long imageTag = 1000000;
     [super layoutSubviews];
-    
-        //self.imgView.image = nil;
-    _imgView.tag = imageTag++;
     
     void (^failedCallBack)(void) = ^(void){NSLog(@"download image failed");};
     void (^successdCallBack)(void) = ^(void){NSLog(@"download image success");};
@@ -47,6 +43,7 @@
 {
     [super prepareForReuse];
     
+    self.imgView.image = nil;
     [self.imgView setHidden:YES];
 }
 
@@ -126,10 +123,10 @@
     float a;
     a = rand() % 10;
     int index = a;
-    NSLog(@"index is %d, rand() %d", index, rand());
     imgUrlPrefix = [arr objectAtIndex:index];
     
-    NSString *imgUrl = [NSString stringWithFormat:@"%@?%ld", imgUrlPrefix, random()];
+//    NSString *imgUrl = [NSString stringWithFormat:@"%@?%2ld", imgUrlPrefix, random()];
+    NSString *imgUrl = [NSString stringWithFormat:@"%@", imgUrlPrefix];
     cell.imgUrl = imgUrl;
     
     return cell;

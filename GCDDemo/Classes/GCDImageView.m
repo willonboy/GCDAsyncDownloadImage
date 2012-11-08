@@ -90,6 +90,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
     UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
     
+        //读取缓存时不加风火轮
     if (cachedImg)
     {
         self.image = cachedImg;
@@ -133,6 +134,15 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             }
             
             UIImage *img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]]];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                    //下载结束 停止风火轮
+                [indicatorView removeFromSuperview];
+                [indicatorView stopAnimating];
+                [indicatorView release];
+                indicatorView = nil;
+            });
+            
             if (img) 
             { 
                 [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
@@ -145,11 +155,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                     if (selfImgView)
                     {
                         dispatch_async(dispatch_get_main_queue(), ^{
-                                //下载结束 停止风火轮
-                            [indicatorView removeFromSuperview];
-                            [indicatorView stopAnimating];
-                            [indicatorView release];
-                            indicatorView = nil;
                             
                             [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
                                 

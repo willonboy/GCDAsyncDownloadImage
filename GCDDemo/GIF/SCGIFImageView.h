@@ -22,7 +22,7 @@
  
  待修复Bug:
  1. 当UIImageView被密集重用时(如GifDemoViewController中的GifCell用法 UIImageView始终于GifCell一起被重用),会出现图片不停切换(当然也不重用UIImageView即不会出现该问题)
- 2. 当整个UITableView中全部都是GIF图片并且不停的滚屏加载GIF会使用CPU和内存短期内持续上升, 最终Crash  (后期将会缓存解析过后的GIF图片元数据(帧图片及Frame信息和时间信息) )
+ 2. 当整个UITableView中全部都是GIF图片并且不停的滚屏加载GIF会使用CPU和内存短期内持续上升, 最终Crash  (后期如果能实现,将会缓存解析过后的GIF图片元数据(帧图片及Frame信息和时间信息) )
  
 */
  

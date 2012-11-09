@@ -16,6 +16,7 @@
 		4910DCB115A57F4100F0F3BA /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4910DCAF15A57F4100F0F3BA /* MainViewController.m */; };
 		4910DCB215A57F4100F0F3BA /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4910DCB015A57F4100F0F3BA /* MainViewController.xib */; };
 		4910DCB715A59AF900F0F3BA /* readonly-dialog-icon-hello.png in Resources */ = {isa = PBXBuildFile; fileRef = 4910DCB615A59AF900F0F3BA /* readonly-dialog-icon-hello.png */; };
+		492143A5164D05A9002CB02B /* 201204031102471.gif in Resources */ = {isa = PBXBuildFile; fileRef = 492143A4164D05A9002CB02B /* 201204031102471.gif */; };
 		4927E291164954990014E5BE /* SCGIFImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4927E290164954990014E5BE /* SCGIFImageView.m */; };
 		4927E295164955C00014E5BE /* Main2ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4927E294164955C00014E5BE /* Main2ViewController.m */; };
 		492F983E15C62627008314A4 /* GCDImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 492F983D15C62627008314A4 /* GCDImageView.m */; };
@@ -40,6 +41,7 @@
 		4910DCAF15A57F4100F0F3BA /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		4910DCB015A57F4100F0F3BA /* MainViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainViewController.xib; sourceTree = "<group>"; };
 		4910DCB615A59AF900F0F3BA /* readonly-dialog-icon-hello.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "readonly-dialog-icon-hello.png"; sourceTree = "<group>"; };
+		492143A4164D05A9002CB02B /* 201204031102471.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = 201204031102471.gif; sourceTree = "<group>"; };
 		4927E28F164954990014E5BE /* SCGIFImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCGIFImageView.h; sourceTree = "<group>"; };
 		4927E290164954990014E5BE /* SCGIFImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCGIFImageView.m; sourceTree = "<group>"; };
 		4927E293164955C00014E5BE /* Main2ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Main2ViewController.h; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 		4910DC9A15A53F1D00F0F3BA /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				492143A4164D05A9002CB02B /* 201204031102471.gif */,
 				4910DCB615A59AF900F0F3BA /* readonly-dialog-icon-hello.png */,
 				49FC51A515A6D122005EE435 /* splash_video_title_slide.png */,
 				4910DC9B15A53F1D00F0F3BA /* GCDDemo-Info.plist */,
@@ -205,6 +208,7 @@
 				4910DCB215A57F4100F0F3BA /* MainViewController.xib in Resources */,
 				4910DCB715A59AF900F0F3BA /* readonly-dialog-icon-hello.png in Resources */,
 				49FC51A615A6D122005EE435 /* splash_video_title_slide.png in Resources */,
+				492143A5164D05A9002CB02B /* 201204031102471.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -16,6 +16,8 @@
 @property(nonatomic, retain)SCGIFImageView *imgView;
 @property(nonatomic, retain)NSString       *imgUrl;
 
+- (void)startLoadGif;
+
 @end
 
 

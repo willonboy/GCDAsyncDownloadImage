@@ -47,12 +47,20 @@
 
 
 
+@interface SCGIFImageView (SCGIFImageView_Private)
+
+- (void) loadImageData:(NSString *)currentDecodeGifPath;
+- (void) decodeGIF:(NSData *)GIFData currentDecodeGifPath:(NSString *)currentDecodeGifPath;
+- (void) GIFReadExtensions;
+- (void) GIFReadDescriptor;
+- (bool) GIFGetBytes:(int)length;
+
+@end
 
 
 
 @implementation SCGIFImageView
 
-@synthesize GIF_frames;
     //add by william 2012-11-7
 static  BOOL GCDAsyncDownloadImageCancel = NO;
 
@@ -89,17 +97,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         [GIF_frames release];
         GIF_frames = nil;
     }
-    
-    if (animateDisplayGifQueue)
-    {
-        dispatch_release(animateDisplayGifQueue);
-    }
-    
-    if (readCacheFileQueue)
-    {
-        dispatch_release(readCacheFileQueue);
-    }
-    
+        
 }
 
     //add by william 2012-11-9
@@ -174,18 +172,23 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 {
     [self destoryVars];
     
+    if (animateDisplayGifQueue)
+    {
+        dispatch_release(animateDisplayGifQueue);
+    }
+    
+    if (readCacheFileQueue)
+    {
+        dispatch_release(readCacheFileQueue);
+    }
+
         //add by william 2012-11-7
     if (_currentDownloadingImgFilePath)
     {
         [_currentDownloadingImgFilePath release];
         _currentDownloadingImgFilePath = nil;
     }
-    
-    if (_showDisplayGifFilePath)
-    {
-        [_showDisplayGifFilePath release];
-    }
-    	
+        	
 	[super dealloc];
 }
 
@@ -201,18 +204,23 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 }
 
 
-- (id)initWithGIFFile:(NSString*)gifFilePath
+    //add by william 2012-11-7
+- (id)initWithGIFDataOrGifPath:(NSData*)gifImageData gifFilePath:(NSString*)gifFilePath
 {
-	NSData* imageData = [NSData dataWithContentsOfFile:gifFilePath];
-	return [self initWithGIFData:imageData];
-}
-
-    //changed by william 2012-11-7
-- (id)initWithGIFData:(NSData*)gifImageData
-{
+    if (_currentDownloadingImgFilePath)
+    {
+        [_currentDownloadingImgFilePath release];
+        _currentDownloadingImgFilePath = nil;
+    }
+    _currentDownloadingImgFilePath = [gifFilePath copy];
+    
     if (gifImageData.length < 4)
     {
-        return nil;
+        gifImageData = [NSData dataWithContentsOfFile:gifFilePath];
+        if (gifImageData.length < 4)
+        {
+            return nil;
+        }
     }
     
     if (![SCGIFImageView isGifImage:gifImageData])
@@ -226,7 +234,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         [self initVars];
         
-        [self decodeGIF:gifImageData];
+        [self decodeGIF:gifImageData currentDecodeGifPath:gifFilePath];
         
         if (GIF_frames.count <= 0)
         {
@@ -234,34 +242,38 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             return [super initWithImage:image];
         }
         
-        dispatch_async(animateDisplayGifQueue, ^{
-        
-            NSAutoreleasePool *pool = [NSAutoreleasePool new];
-            
-            [self loadImageData];
-            
-            [pool drain];
-        });
+        [self loadImageData:gifFilePath];
 	}
 	
 	return self;
 }
 
     //add by william 2012-11-7
-- (void)loadImageByImageData:(NSData *)gifImageData
+- (void)loadImageByImageDataOrFilePath:(NSData *)gifImageData currentDecodeGifPath:(NSString *)currentDecodeGifPath
 {
     dispatch_async(animateDisplayGifQueue, ^{
         
-        if (gifImageData.length < 4)
+        if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
         {
             return;
+        }
+        
+        NSData *gifData = gifImageData;
+        
+        if (gifData.length < 4)
+        {
+            gifData = [NSData dataWithContentsOfFile:currentDecodeGifPath];
+            if (gifData.length < 4)
+            {
+                return;
+            }
         }
         
         NSAutoreleasePool *pool = [NSAutoreleasePool new];
         
-        if (![SCGIFImageView isGifImage:gifImageData])
+        if (![SCGIFImageView isGifImage:gifData])
         {
-            UIImage* image = [UIImage imageWithData:gifImageData];
+            UIImage* image = [UIImage imageWithData:gifData];
             dispatch_async(dispatch_get_main_queue(), ^{
                 
                 self.image = image;
@@ -272,11 +284,17 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         }
         
         
-        [self decodeGIF:gifImageData];
+        [self decodeGIF:gifData currentDecodeGifPath:currentDecodeGifPath];
         
+        if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+        {
+            [pool drain];
+            return;
+        }
+
         if (GIF_frames.count <= 0)
         {
-            UIImage* image = [UIImage imageWithData:gifImageData];
+            UIImage* image = [UIImage imageWithData:gifData];
             dispatch_async(dispatch_get_main_queue(), ^{
                 
                 self.image = image;
@@ -286,28 +304,19 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             return;
         }
         
-        [self loadImageData];
+        [self loadImageData:currentDecodeGifPath];
         
         [pool drain];
     });
 }
 
-    //add by william 2012-11-7
-- (void)loadImageByImageFilePath:(NSString *)gifFilePath
+
+- (void)loadImageData:(NSString *)currentDecodeGifPath
 {
-    if (_showDisplayGifFilePath)
+    if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
     {
-        [_showDisplayGifFilePath release];
-        _showDisplayGifFilePath = nil;
+        return;
     }
-    _showDisplayGifFilePath = [gifFilePath copy];
-    
-    [self loadImageByImageData:[NSData dataWithContentsOfFile:gifFilePath]];
-}
-
-
-- (void)loadImageData
-{
     
         //add by william 2012-11-7
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
@@ -350,6 +359,14 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	AnimatedGifFrame *lastFrame = nil;
 	for (UIImage *image in array)
 	{
+        if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+        {
+            [overlayArray release];
+            [array release];
+            [pool drain];
+            return;
+        }
+        
 		// Get Frame
 		AnimatedGifFrame *frame = [GIF_frames objectAtIndex:i];
 		
@@ -363,7 +380,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 		CGContextTranslateCTM(ctx, 0.0, -size.height);
 		
 		// Check if lastFrame exists
-		CGRect clipRect;
+		CGRect clipRect = CGRectZero;
 		
 		// Disposal Method (Operations before draw frame)
 		switch (frame.disposalMethod)
@@ -440,10 +457,14 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	}
 	UIGraphicsEndImageContext();
     
-    if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:_showDisplayGifFilePath])
+    if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
     {
         [self setImage:[overlayArray objectAtIndex:0]];
         [self setAnimationImages:overlayArray];
+    }
+    else
+    {
+        
     }
     
     [overlayArray release];
@@ -458,7 +479,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:_showDisplayGifFilePath])
+        if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
         {
                 // GIFs store the delays as 1/100th of a second,
                 // UIImageViews want it in seconds.
@@ -469,50 +490,30 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             
             [self startAnimating];
         }
+        else
+        {
+            
+        }
     });   
     
         //add by william 2012-11-7
     [pool drain];
 }
 	 
-- (void) decodeGIF:(NSData *)GIFData
+- (void) decodeGIF:(NSData *)GIFData currentDecodeGifPath:(NSString *)currentDecodeGifPath
 {
         //add by william 2012-11-7
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     
-    
-	if (GIF_pointer)
+    if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
     {
-        [GIF_pointer release];
-        GIF_pointer = nil;
-    }
-	GIF_pointer = [GIFData retain];
-    
-    if (GIF_buffer)
-    {
-        [GIF_buffer release];
-        GIF_buffer = nil;
+        [pool drain];
+        return;
     }
     
-    if (GIF_global)
-    {
-        [GIF_global release];
-        GIF_global = nil;
-    }
-    
-    if (GIF_screen)
-    {
-        [GIF_screen release];
-        GIF_screen = nil;
-    }
-    
-    if (GIF_frames)
-    {
-        [GIF_frames release];
-        GIF_frames = nil;
-    }
-
-	
+    [self destoryVars];
+    GIF_pointer = [GIFData retain];
+		
     GIF_buffer = [[NSMutableData alloc] init];
 	GIF_global = [[NSMutableData alloc] init];
 	GIF_screen = [[NSMutableData alloc] init];
@@ -555,6 +556,23 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	unsigned char bBuffer[1];
 	while ([self GIFGetBytes:1] == YES)
     {
+        if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+        {
+                // clean up stuff
+            [GIF_buffer release];
+            GIF_buffer = nil;
+            
+            [GIF_screen release];
+            GIF_screen = nil;
+            
+            [GIF_global release];	
+            GIF_global = nil;
+            
+                //add by william 2012-11-7
+            [pool drain];
+            return;
+        }
+        
         [GIF_buffer getBytes:bBuffer length:1];
         
         if (bBuffer[0] == 0x3B)
@@ -598,7 +616,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
 	// 21! But we still could have an Application Extension,
 	// so we want to check for the full signature.
-	unsigned char cur[1], prev[1];
+	unsigned char cur[1], prev[1] = {0};
     [self GIFGetBytes:1];
     [GIF_buffer getBytes:cur length:1];
     
@@ -883,6 +901,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     }
     _currentDownloadingImgFilePath = [imageFilePath copy];
     
+    
         //读取缓存时不加风火轮
     if (cacheImgData)
     {
@@ -895,7 +914,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         }
         else
         {
-            [self loadImageByImageFilePath:imageFilePath];
+            [self loadImageByImageDataOrFilePath:nil currentDecodeGifPath:imageFilePath];
         }
         
         if (successBlock != NULL)
@@ -982,7 +1001,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                             {
                                 [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
                                     
-                                    [selfImgView loadImageByImageFilePath:imageFilePath];
+                                    [selfImgView loadImageByImageDataOrFilePath:nil currentDecodeGifPath:imageFilePath];
                                     [UIView animateWithDuration:0.4 animations:^{
                                         
                                         selfImgView.alpha = 1.0f;

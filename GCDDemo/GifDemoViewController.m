@@ -17,10 +17,15 @@
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self)
     {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            _imgView = [[SCGIFImageView alloc] initWithFrame:CGRectMake(10, 10, 300, 280)];
-            [self addSubview:_imgView];
-        });
+        _imgView = [[SCGIFImageView alloc] initWithFrame:CGRectMake(10, 10, 300, 280)];
+        _imgView.image = [UIImage imageNamed:@"splash_video_title_slide.png"];//set default image
+        [self addSubview:_imgView];
+        
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            _imgView = [[SCGIFImageView alloc] initWithFrame:CGRectMake(10, 10, 300, 280)];
+//            _imgView.image = [UIImage imageNamed:@"splash_video_title_slide.png"];//set default image
+//            [self addSubview:_imgView];
+//        });
     }
     
     return self;
@@ -30,24 +35,17 @@
 {
     [super layoutSubviews];
     
-    
-        //每次都重新添加新的UIImageView是为了修复GIF在UIImageView密集重用时图片不停切换, 此时UIImageView不重用!
+        //加载本地gif图片
 //    if (_imgView)
 //    {
 //        [_imgView removeFromSuperview];
 //        [_imgView release];
 //        _imgView = nil;
 //    }
-//    
-//    _imgView = [[SCGIFImageView alloc] initWithFrame:CGRectMake(10, 10, 300, 280)];
+//    _imgView = [[SCGIFImageView alloc] initWithGIFDataOrGifPath:nil gifFilePath:[[NSBundle mainBundle] pathForResource:@"201204031102471" ofType:@"gif"]];
+//    _imgView.frame = CGRectMake(10, 10, 300, 280);
 //    [self addSubview:_imgView];
-//    
-    void (^failedCallBack)(void) = ^(void){NSLog(@"download image failed");};
-    void (^successdCallBack)(void) = ^(void){NSLog(@"download image success");};
-    
-    [_imgView getImageWithUrl:self.imgUrl defaultImg:[UIImage imageNamed:@"splash_video_title_slide.png"] successBlock:successdCallBack failedBlock:failedCallBack];
-    [self.imgView setHidden:NO];
-    
+           
 }
 
 
@@ -55,8 +53,17 @@
 {
     [super prepareForReuse];
     
-    self.imgView.image = nil;
-    [self.imgView setHidden:YES];
+    self.imgView.image = [UIImage imageNamed:@"splash_video_title_slide.png"];//set default image
+}
+
+- (void)startLoadGif;
+{ 
+        //异步加载网络图片
+    void (^failedCallBack)(void) = ^(void){NSLog(@"download image failed");};
+    void (^successdCallBack)(void) = ^(void){NSLog(@"download image success");};
+
+    [_imgView getImageWithUrl:self.imgUrl defaultImg:[UIImage imageNamed:@"splash_video_title_slide.png"] successBlock:successdCallBack failedBlock:failedCallBack];
+    [self.imgView setHidden:NO];
 }
 
 
@@ -73,11 +80,6 @@
 
 
 
-
-
-@interface GifDemoViewController ()
-
-@end
 
 
 
@@ -141,13 +143,25 @@
     NSString *imgUrl = [NSString stringWithFormat:@"%@", imgUrlPrefix];
     cell.imgUrl = imgUrl;
     
+        //先加载初始时可见的cell中的图片
+    if (indexPath.row < 2)
+    {
+        [cell startLoadGif];
+    }
+    
     return cell;
 }
 
 
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView; 
+{
+    NSLog(@"scrollViewDidEndDecelerating");
+    for (GifCell *Cell in _tableView.visibleCells)
+    {
+        [Cell startLoadGif];
+    }
+}
+
+
 @end
-
-
-
-
 

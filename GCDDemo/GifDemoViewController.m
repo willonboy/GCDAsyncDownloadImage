@@ -133,6 +133,15 @@
                     @"http://s1.dwstatic.com/group1/M00/DB/EF/f9227ce4616661689401af63e2590d13.gif",
                     @"http://s1.dwstatic.com/group1/M00/BA/7F/ba6d774242e427e57309f8e324424d03.gif",//
                     @"http://hiphotos.baidu.com/michael%25D8%25BC%25BF%25A1%25BA%25D3/pic/item/b8bb02d1dfbcac90a044df12.gif",
+//                    @"http://willonboy.tk/wp-content/uploads/2012/02/6_84890_774c49d3192b9cc.png",//也可以用SCGIFImageView来加载png及jpg图片
+//                    @"http://65555655.com/wp-content/uploads/2012/07/yourQRcode-300x300.png",
+//                    @"http://cdn.ifanr.cn/wp-content/uploads/2012/07/Olympic.jpg",
+//                    @"http://cdn.ifanr.cn/wp-content/uploads/2012/07/Google-Fiber.jpg",
+//                    @"http://cdn.ifanr.cn/wp-content/uploads/2012/07/0DSC_9939.jpg",
+//                    @"http://cdn.ifanr.cn/wp-content/uploads/2012/07/Eye-Fi-Yuyal.jpg",
+//                    @"http://cdn.ifanr.cn/wp-content/uploads/2012/07/facebook1.jpg",
+//                    @"http://cdn.ifanr.cn/wp-content/uploads/2012/07/icloud_meitu_1.jpg",
+//                    @"http://65555655.com/wp-content/themes/themia-lite/images/featureimg-1.png",
                     nil];
     float a;
     a = rand() % 10;

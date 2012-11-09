@@ -56,21 +56,74 @@
     //add by william 2012-11-7
 static  BOOL GCDAsyncDownloadImageCancel = NO;
 
-- (void)initReadCacheFileQueue
+
+    //add by william 2012-11-9
+- (void)destoryVars
 {
+    if (GIF_pointer)
+    {
+        [GIF_pointer release];
+        GIF_pointer = nil;
+    }
+    
+    if (GIF_buffer)
+    {
+        [GIF_buffer release];
+        GIF_buffer = nil;
+    }
+    
+    if (GIF_global)
+    {
+        [GIF_global release];
+        GIF_global = nil;
+    }
+    
+    if (GIF_screen)
+    {
+        [GIF_screen release];
+        GIF_screen = nil;
+    }
+    
+    if (GIF_frames)
+    {
+        [GIF_frames release];
+        GIF_frames = nil;
+    }
+    
+    if (animateDisplayGifQueue)
+    {
+        dispatch_release(animateDisplayGifQueue);
+    }
+    
+    if (readCacheFileQueue)
+    {
+        dispatch_release(readCacheFileQueue);
+    }
+    
+}
+
+    //add by william 2012-11-9
+- (void)initVars
+{
+    [self destoryVars];
+	
+    GIF_buffer = [[NSMutableData alloc] init];
+	GIF_global = [[NSMutableData alloc] init];
+	GIF_screen = [[NSMutableData alloc] init];
+	GIF_frames = [[NSMutableArray alloc] init];
+    
     if (!readCacheFileQueue)
     {
         readCacheFileQueue = dispatch_queue_create("www.willonboy.tk.readCacheFileQueue", 0);
     }
-}
-
-- (void)initAnimateDisplayGifDispathQueue
-{
+    
     if (!animateDisplayGifQueue)
     {
         animateDisplayGifQueue = dispatch_queue_create("www.willonboy.tk.animateDisplayGifQueue", 0);
     }
+    
 }
+
 
     //add by william 2012-11-7
 - (id)init
@@ -78,8 +131,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     self = [super init];
     if (self)
     {
-        [self initAnimateDisplayGifDispathQueue];
-        [self initReadCacheFileQueue];
+        [self initVars];
     }
     return self;
 }
@@ -90,8 +142,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     self = [super initWithFrame:frame];
     if (self)
     {
-        [self initAnimateDisplayGifDispathQueue];
-        [self initReadCacheFileQueue];
+        [self initVars];
     }
     return self;
 }
@@ -102,8 +153,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     self = [super initWithImage:image];
     if (self)
     {
-        [self initAnimateDisplayGifDispathQueue];
-        [self initReadCacheFileQueue];
+        [self initVars];
     }
     return self;
 }
@@ -114,30 +164,15 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     self = [super initWithImage:image highlightedImage:highlightedImage];
     if (self)
     {
-        [self initAnimateDisplayGifDispathQueue];
-        [self initReadCacheFileQueue];
+        [self initVars];
     }
     return self;
 }
 
+
 - (void)dealloc
 {
-    if (GIF_buffer != nil)
-    {
-	    [GIF_buffer release];
-    }
-    
-    if (GIF_screen != nil)
-    {
-		[GIF_screen release];
-    }
-    
-    if (GIF_global != nil)
-    {
-        [GIF_global release];
-    }
-    
-	[GIF_frames release];
+    [self destoryVars];
     
         //add by william 2012-11-7
     if (_currentDownloadingImgFilePath)
@@ -145,9 +180,12 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         [_currentDownloadingImgFilePath release];
         _currentDownloadingImgFilePath = nil;
     }
-        //add by william 2012-11-7
-    dispatch_release(animateDisplayGifQueue);
-	
+    
+    if (_showDisplayGifFilePath)
+    {
+        [_showDisplayGifFilePath release];
+    }
+    	
 	[super dealloc];
 }
 
@@ -162,19 +200,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	return NO;
 }
 
-+ (NSMutableArray*)getGifFrames:(NSData*)gifImageData
-{
-	SCGIFImageView* gifImageView = [[SCGIFImageView alloc] initWithGIFData:gifImageData];
-	if (!gifImageView)
-    {
-		return nil;
-	}
-	
-	NSMutableArray* gifFrames = gifImageView.GIF_frames;
-	[[gifFrames retain] autorelease];
-	[gifImageView release];
-	return gifFrames;
-}
 
 - (id)initWithGIFFile:(NSString*)gifFilePath
 {
@@ -199,8 +224,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	self = [super init];
 	if (self)
     {
-        [self initAnimateDisplayGifDispathQueue];
-        [self initReadCacheFileQueue];
+        [self initVars];
         
         [self decodeGIF:gifImageData];
         
@@ -271,28 +295,16 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     //add by william 2012-11-7
 - (void)loadImageByImageFilePath:(NSString *)gifFilePath
 {
-    if (_decodeGifFilePath)
+    if (_showDisplayGifFilePath)
     {
-        [_decodeGifFilePath release];
-        _decodeGifFilePath = nil;
+        [_showDisplayGifFilePath release];
+        _showDisplayGifFilePath = nil;
     }
-    _decodeGifFilePath = [gifFilePath copy];
+    _showDisplayGifFilePath = [gifFilePath copy];
     
     [self loadImageByImageData:[NSData dataWithContentsOfFile:gifFilePath]];
 }
 
-- (void)setGIF_frames:(NSMutableArray *)gifFrames
-{
-	[gifFrames retain];
-	
-	if (GIF_frames)
-    {
-		[GIF_frames release];
-	}
-	GIF_frames = gifFrames;
-	
-    [self loadImageData];
-}
 
 - (void)loadImageData
 {
@@ -306,11 +318,15 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	{
             //changed by william 2012-11-7
             //[array addObject: [self getFrameAsImageAtIndex:i]];
-        if ([self getFrameAsImageAtIndex:i])
+        NSData *frameData = ((AnimatedGifFrame *)[GIF_frames objectAtIndex:i]).data;
+        if (frameData)
         {
-            [array addObject: [self getFrameAsImageAtIndex:i]];
+            UIImage *img = [UIImage imageWithData:frameData];
+            if (img)
+            {
+                [array addObject: img];
+            }
         }
-        
 	}
         //add by william 2012-11-7
     if ([array count] < 1)
@@ -424,7 +440,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	}
 	UIGraphicsEndImageContext();
     
-    if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:_decodeGifFilePath])
+    if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:_showDisplayGifFilePath])
     {
         [self setImage:[overlayArray objectAtIndex:0]];
         [self setAnimationImages:overlayArray];
@@ -442,7 +458,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:_decodeGifFilePath])
+        if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:_showDisplayGifFilePath])
         {
                 // GIFs store the delays as 1/100th of a second,
                 // UIImageViews want it in seconds.
@@ -465,24 +481,37 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     
     
-	GIF_pointer = GIFData;
+	if (GIF_pointer)
+    {
+        [GIF_pointer release];
+        GIF_pointer = nil;
+    }
+	GIF_pointer = [GIFData retain];
     
-    if (GIF_buffer != nil)
+    if (GIF_buffer)
     {
         [GIF_buffer release];
+        GIF_buffer = nil;
     }
     
-    if (GIF_global != nil)
+    if (GIF_global)
     {
         [GIF_global release];
+        GIF_global = nil;
     }
     
-    if (GIF_screen != nil)
+    if (GIF_screen)
     {
         [GIF_screen release];
+        GIF_screen = nil;
     }
     
-	[GIF_frames release];
+    if (GIF_frames)
+    {
+        [GIF_frames release];
+        GIF_frames = nil;
+    }
+
 	
     GIF_buffer = [[NSMutableData alloc] init];
 	GIF_global = [[NSMutableData alloc] init];
@@ -492,7 +521,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     // Reset file counters to 0
 	dataPointer = 0;
 	
-	[self GIFSkipBytes: 6]; // GIF89a, throw away
+        //changed by william 2012-11-9
+        //[self GIFSkipBytes: 6]; // GIF89a, throw away
+    if ([GIF_pointer length] >= 6)
+    {
+        dataPointer += 6;
+    }
+    
 	[self GIFGetBytes: 7]; // Logical Screen Descriptor
 	
     // Deep copy
@@ -739,9 +774,10 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         GIF_buffer = nil;
     }
     
-	if ((NSInteger)[GIF_pointer length] >= dataPointer + length) // Don't read across the edge of the file..
+	if ([GIF_pointer length] >= dataPointer + length) // Don't read across the edge of the file..
     {
-		GIF_buffer = [[GIF_pointer subdataWithRange:NSMakeRange(dataPointer, length)] retain];
+		    //changed by william 2012-11-9
+		GIF_buffer  = [[NSMutableData dataWithData:[GIF_pointer subdataWithRange:NSMakeRange(dataPointer, length)]] retain];
         dataPointer += length;
 		return YES;
 	}
@@ -751,43 +787,25 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	}
 }
 
-- (bool) GIFSkipBytes: (int) length
-{
-    if ((NSInteger)[GIF_pointer length] >= dataPointer + length)
-    {
-        dataPointer += length;
-        return YES;
-    }
-    else
-    {
-    	return NO;
-    }
-}
 
-- (NSData*) getFrameAsDataAtIndex:(int)index
-{
-	if (index < (NSInteger)[GIF_frames count])
-	{
-		return ((AnimatedGifFrame *)[GIF_frames objectAtIndex:index]).data;
-	}
-	else
-	{
-		return nil;
-	}
-}
 
-- (UIImage*) getFrameAsImageAtIndex:(int)index
-{
-    NSData *frameData = [self getFrameAsDataAtIndex: index];
-    UIImage *image = nil;
-    
-    if (frameData != nil)
-    {
-		image = [UIImage imageWithData:frameData];
-    }
-    
-    return image;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     //add by william 2012-11-7

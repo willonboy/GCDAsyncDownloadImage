@@ -30,6 +30,18 @@
 {
     [super layoutSubviews];
     
+    
+        //每次都重新添加新的UIImageView是为了修复GIF在UIImageView密集重用时图片不停切换, 此时UIImageView不重用!
+//    if (_imgView)
+//    {
+//        [_imgView removeFromSuperview];
+//        [_imgView release];
+//        _imgView = nil;
+//    }
+//    
+//    _imgView = [[SCGIFImageView alloc] initWithFrame:CGRectMake(10, 10, 300, 280)];
+//    [self addSubview:_imgView];
+//    
     void (^failedCallBack)(void) = ^(void){NSLog(@"download image failed");};
     void (^successdCallBack)(void) = ^(void){NSLog(@"download image success");};
     
@@ -134,4 +146,8 @@
 
 
 @end
+
+
+
+
 

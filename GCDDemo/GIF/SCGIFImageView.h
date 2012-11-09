@@ -82,7 +82,7 @@
     dispatch_queue_t                animateDisplayGifQueue;
     
         //当前正在解析的gif图片路径, 用于区别正在下载的git图片路径(在密集重用时当前正在解析的图片不一定是需要显示的图片, 有可能造成图片乱跳, 该值与_currentDownloadingImgFilePath对比以修复该bug)
-    NSString                        *_decodeGifFilePath;
+    NSString                        *_showDisplayGifFilePath;
 }
 @property (nonatomic, retain) NSMutableArray *GIF_frames;
 

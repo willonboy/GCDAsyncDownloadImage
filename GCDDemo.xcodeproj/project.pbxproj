@@ -291,15 +291,15 @@
 		4910DCA815A53F1D00F0F3BA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer: trojan zhang (7K797J24DD)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: trojan zhang (7K797J24DD)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: trojan zhang (62T7LX36NS)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: trojan zhang (62T7LX36NS)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "GCDDemo/GCDDemo-Prefix.pch";
 				INFOPLIST_FILE = "GCDDemo/GCDDemo-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "34314CD6-E45F-4BBC-A5A7-3AB0C30482DE";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "34314CD6-E45F-4BBC-A5A7-3AB0C30482DE";
+				PROVISIONING_PROFILE = "90D30AC1-F9EA-4731-92EF-54093B16BADB";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "90D30AC1-F9EA-4731-92EF-54093B16BADB";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -307,15 +307,15 @@
 		4910DCA915A53F1D00F0F3BA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer: trojan zhang (7K797J24DD)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: trojan zhang (7K797J24DD)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: trojan zhang (62T7LX36NS)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: trojan zhang (62T7LX36NS)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "GCDDemo/GCDDemo-Prefix.pch";
 				INFOPLIST_FILE = "GCDDemo/GCDDemo-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "34314CD6-E45F-4BBC-A5A7-3AB0C30482DE";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "34314CD6-E45F-4BBC-A5A7-3AB0C30482DE";
+				PROVISIONING_PROFILE = "90D30AC1-F9EA-4731-92EF-54093B16BADB";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "90D30AC1-F9EA-4731-92EF-54093B16BADB";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

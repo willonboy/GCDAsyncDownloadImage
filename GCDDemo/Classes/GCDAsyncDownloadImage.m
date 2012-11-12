@@ -151,6 +151,12 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
 }
 
+    //add by william 2012-11-7
++ (void)initGCDAsyncDownloadFlag;
+{
+    GCDAsyncDownloadImageCancel = NO;
+}
+
 
 + (void)cancelDownload;
 {

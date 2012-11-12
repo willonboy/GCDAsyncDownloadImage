@@ -95,6 +95,7 @@
     //add by william 2012-11-8
 + (void)cancelDownload;
 
++ (void)initGCDAsyncDownloadFlag;
 
 @end
 

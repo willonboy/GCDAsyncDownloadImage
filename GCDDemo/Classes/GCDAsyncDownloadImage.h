@@ -33,4 +33,6 @@
 
 + (void)cancelDownload;
 
++ (void)initGCDAsyncDownloadFlag;
+
 @end

@@ -76,6 +76,7 @@
     dispatch_queue_t                readCacheFileQueue;
     dispatch_queue_t                animateDisplayGifQueue;
     
+    Class       selfClass;
 }
 
 + (BOOL) isGifImage:(NSData*)imageData;

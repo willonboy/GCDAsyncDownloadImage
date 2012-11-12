@@ -13,6 +13,7 @@
 @implementation GCDImageView
 static  BOOL GCDAsyncDownloadImageCancel = NO;
 
+Class object_getClass(id object);
 
 - (void)dealloc 
 {
@@ -152,10 +153,10 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                     //所以用此来判断是否被重用了,下载的图是否是当前重用时要下载的图
                 if (!_currentDownloadingImgFilePath || [_currentDownloadingImgFilePath isEqualToString:blockUseCurrentDownloadingImgPath]) 
                 {
-                    if (selfImgView)
-                    {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        
+                        if (selfImgView && selfClass == object_getClass(selfImgView))
+                        {
                             [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
                                 
                                 selfImgView.image = img;
@@ -164,13 +165,12 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                                     selfImgView.alpha = 1.0f;
                                 }];
                             }];
-                            
-                        });
-                    }
-                    else
-                    {
-                        NSLog(@"imgview released");
-                    }
+                        }
+                        else
+                        {
+                            NSLog(@"imgview released");
+                        }
+                    });
                 }                
                     //嵌套的block会被copy
                 if (successBlock != NULL) 

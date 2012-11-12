@@ -60,7 +60,7 @@
 
 
 @implementation SCGIFImageView
-
+Class object_getClass(id object);
     //add by william 2012-11-7
 static  BOOL GCDAsyncDownloadImageCancel = NO;
 
@@ -253,7 +253,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 {
     dispatch_async(animateDisplayGifQueue, ^{
         
-        if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+        if (GCDAsyncDownloadImageCancel || (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
         {
             return;
         }
@@ -286,7 +286,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         
         [self decodeGIF:gifData currentDecodeGifPath:currentDecodeGifPath];
         
-        if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+        if (GCDAsyncDownloadImageCancel || (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
         {
             [pool drain];
             return;
@@ -313,7 +313,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 
 - (void)loadImageData:(NSString *)currentDecodeGifPath
 {
-    if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+    if (GCDAsyncDownloadImageCancel || (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
     {
         return;
     }
@@ -359,7 +359,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	AnimatedGifFrame *lastFrame = nil;
 	for (UIImage *image in array)
 	{
-        if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+        if (GCDAsyncDownloadImageCancel || (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
         {
             [overlayArray release];
             [array release];
@@ -457,7 +457,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	}
 	UIGraphicsEndImageContext();
     
-    if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+    if(!GCDAsyncDownloadImageCancel && (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
     {
         [self setImage:[overlayArray objectAtIndex:0]];
         [self setAnimationImages:overlayArray];
@@ -479,7 +479,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        if (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+        if (!GCDAsyncDownloadImageCancel && (_currentDownloadingImgFilePath && [_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
         {
                 // GIFs store the delays as 1/100th of a second,
                 // UIImageViews want it in seconds.
@@ -505,7 +505,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         //add by william 2012-11-7
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     
-    if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+    if (GCDAsyncDownloadImageCancel || (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
     {
         [pool drain];
         return;
@@ -556,7 +556,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	unsigned char bBuffer[1];
 	while ([self GIFGetBytes:1] == YES)
     {
-        if (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath])
+        if ( GCDAsyncDownloadImageCancel || (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
         {
                 // clean up stuff
             [GIF_buffer release];
@@ -982,10 +982,10 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                     //所以用此来判断是否被重用了,下载的图是否是当前重用时要下载的图
                 if (!_currentDownloadingImgFilePath || [_currentDownloadingImgFilePath isEqualToString:blockUseCurrentDownloadingImgPath])
                 {
-                    if (selfImgView)
-                    {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                                                        
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        
+                        if (selfImgView && selfClass == object_getClass(selfImgView))
+                        {
                             if (!isGifImg)
                             {
                                 [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
@@ -1008,13 +1008,12 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                                     }];
                                 }];
                             }
-                            
-                        });
-                    }
-                    else
-                    {
-                        NSLog(@"imgview released");
-                    }
+                        }
+                        else
+                        {
+                            NSLog(@"imgview released");
+                        }
+                    });
                 }
                     //嵌套的block会被copy
                 if (successBlock != NULL)

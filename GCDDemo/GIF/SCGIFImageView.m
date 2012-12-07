@@ -361,6 +361,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 	{
         if (GCDAsyncDownloadImageCancel || (_currentDownloadingImgFilePath && ![_currentDownloadingImgFilePath isEqualToString:currentDecodeGifPath]))
         {
+            UIGraphicsEndImageContext();
             [overlayArray release];
             [array release];
             [pool drain];

@@ -114,7 +114,7 @@ Class object_getClass(id object);
         if (!indicatorView) 
         {
             indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-            indicatorView.center = self.center;
+            indicatorView.center = CGPointMake(self.frame.size.width / 2, self.frame.size.height / 2);
             [self addSubview:indicatorView];
             [indicatorView startAnimating];
         }

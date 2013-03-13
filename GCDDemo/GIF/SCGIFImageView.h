@@ -98,6 +98,10 @@
 
 + (void)initGCDAsyncDownloadFlag;
 
++ (UIImage *)loadImg:(NSString *)imgUrl;
+
++ (NSString *)loadCacheImgPath:(NSString *)imgUrl;
+
 @end
 
 

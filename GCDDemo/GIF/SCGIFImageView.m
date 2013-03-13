@@ -827,9 +827,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 
 
 
-    //add by william 2012-11-7
-    //对要请求的图片路径进行MD5签名
-- (NSString *)MD5Value:(NSString *)str
++ (NSString *)MD5Value:(NSString *)str
 {
 	if (str==nil)
     {
@@ -844,6 +842,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
             result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]
             ];
+}
+
+    //add by william 2012-11-7
+    //对要请求的图片路径进行MD5签名
+- (NSString *)MD5Value:(NSString *)str
+{
+    return [SCGIFImageView MD5Value:str];
 }
 
     //add by william 2012-11-7
@@ -930,7 +935,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         if (!indicatorView)
         {
             indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-            indicatorView.center = self.center;
+            indicatorView.center =  CGPointMake(self.frame.size.width / 2, self.frame.size.height / 2);
             [self addSubview:indicatorView];
             [indicatorView startAnimating];
         }
@@ -1052,5 +1057,54 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 {
     GCDAsyncDownloadImageCancel = YES;
 }
+
+
+
++ (UIImage *)loadImg:(NSString *)imgUrl;
+{
+    if (imgUrl.length < 1)
+    {
+        return nil;
+    }
+    
+    
+    NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
+    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
+    
+        //读取缓存时不加风火轮
+    if (cacheImgData)
+    {
+        return [UIImage imageWithData:cacheImgData];
+    }
+    else
+    {
+        NSData *imageData = [NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]];
+        UIImage *img = nil;
+        
+        if (imageData)
+        {
+            img = [UIImage imageWithData:imageData];
+            if (img)
+            {
+                [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
+            }
+            return img;
+        }
+    }
+    return nil;
+}
+
++ (NSString *)loadCacheImgPath:(NSString *)imgUrl;
+{
+    if (imgUrl.length < 1)
+    {
+        return nil;
+    }
+    
+    NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
+    
+    return imageFilePath;
+}
+
 
 @end

@@ -888,6 +888,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
+    self.image = defaultImg;
     
     if (!urlString || urlString.length < 1)
     {
@@ -895,7 +896,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         return;
     }
     
-    self.image = defaultImg;
     
     NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
     NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
@@ -973,9 +973,20 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 if (!isGifImg)
                 {
                     img = [UIImage imageWithData:imageData];
+                        //如果请求到的是图片
                     if (img)
                     {
                         [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
+                    }
+                        //还有可能不是图片
+                    else
+                    {
+                            //嵌套的block会被copy
+                        if (failedBlock != NULL)
+                        {
+                            dispatch_async(dispatch_get_main_queue(), failedBlock);
+                        }
+                        return;
                     }
                 }
                 else

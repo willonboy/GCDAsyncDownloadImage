@@ -80,13 +80,13 @@ Class object_getClass(id object);
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
+    self.image = defaultImg;
     if (!urlString || urlString.length < 1) 
     {
         [pool drain];
         return;
     }
     
-    self.image = defaultImg;
     
     NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
     UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];

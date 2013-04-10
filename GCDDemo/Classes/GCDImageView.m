@@ -83,6 +83,12 @@ Class object_getClass(id object);
     self.image = defaultImg;
     if (!urlString || urlString.length < 1) 
     {
+            //嵌套的block会被copy
+        if (failedBlock != NULL)
+        {
+            dispatch_async(dispatch_get_main_queue(), failedBlock);
+        }
+        
         [pool drain];
         return;
     }

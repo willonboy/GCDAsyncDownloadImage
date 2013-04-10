@@ -56,6 +56,12 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     self.image = defaultImg;
     if (!urlString || urlString.length < 1) 
     {
+            //嵌套的block会被copy
+        if (failedBlock != NULL)
+        {
+            dispatch_async(dispatch_get_main_queue(), failedBlock);
+        }
+        
         [pool drain];
         return;
     }
@@ -76,6 +82,14 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     }
     else
     {
+        for (UIView *view in self.subviews)
+        {
+            if ([view isKindOfClass:[UIActivityIndicatorView class]])
+            {
+                [view removeFromSuperview];
+            }
+        }
+        
         __block UIActivityIndicatorView *indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         indicatorView.center = CGPointMake(self.frame.size.width / 2, self.frame.size.height / 2);
         [self addSubview:indicatorView];
@@ -109,7 +123,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             { 
                 [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
                 
-                NSLog(@"selfImgView.tag %ld== imageViewTag %ld", selfImgView.tag, imageViewTag);
+                    //NSLog(@"selfImgView.tag %ld== imageViewTag %ld", selfImgView.tag, imageViewTag);
                 
                 if (selfImgView && selfImgView.tag == imageViewTag)
                 {

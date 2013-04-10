@@ -892,6 +892,12 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     if (!urlString || urlString.length < 1)
     {
+            //嵌套的block会被copy
+        if (failedBlock != NULL)
+        {
+            dispatch_async(dispatch_get_main_queue(), failedBlock);
+        }
+        
         [pool drain];
         return;
     }
@@ -932,6 +938,14 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     }
     else
     {
+//        for (UIView *view in self.subviews)
+//        {
+//            if ([view isKindOfClass:[UIActivityIndicatorView class]])
+//            {
+//                [view removeFromSuperview];
+//            }
+//        }
+        
         if (!indicatorView)
         {
             indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
@@ -1071,11 +1085,11 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 
 
 
-+ (UIImage *)loadImg:(NSString *)imgUrl;
++ (UIImage *)loadCacheImg:(NSString *)imgUrl defaultImg:(UIImage *)defaultImg;
 {
     if (imgUrl.length < 1)
     {
-        return nil;
+        return defaultImg;
     }
     
     
@@ -1087,22 +1101,22 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         return [UIImage imageWithData:cacheImgData];
     }
-    else
-    {
-        NSData *imageData = [NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]];
-        UIImage *img = nil;
-        
-        if (imageData)
-        {
-            img = [UIImage imageWithData:imageData];
-            if (img)
-            {
-                [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
-            }
-            return img;
-        }
-    }
-    return nil;
+//    else
+//    {
+//        NSData *imageData = [NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]];
+//        UIImage *img = nil;
+//        
+//        if (imageData)
+//        {
+//            img = [UIImage imageWithData:imageData];
+//            if (img)
+//            {
+//                [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
+//            }
+//            return img;
+//        }
+//    }
+    return defaultImg;
 }
 
 + (NSString *)loadCacheImgPath:(NSString *)imgUrl;

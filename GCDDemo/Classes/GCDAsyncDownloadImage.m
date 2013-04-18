@@ -52,6 +52,20 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 - (void)getImageWithUrl:(NSString *)urlString defaultImg:(UIImage *)defaultImg successBlock:(void(^)(void)) successBlock failedBlock:(void(^)(void)) failedBlock;
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+   
+    UIImage *cachedImg = [self loadCacheImg:urlString defaultImg:nil];
+    if (cachedImg)
+    {
+        self.image = cachedImg;
+        
+        if (successBlock != NULL)
+        {
+            successBlock();
+        }
+        
+        [pool drain];
+        return;
+    }
     
     self.image = defaultImg;
     if (!urlString || urlString.length < 1) 
@@ -68,7 +82,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     
     NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
-    UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
+    cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
     
         //读取缓存时不加风火轮
     if (cachedImg)
@@ -175,6 +189,38 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 + (void)cancelDownload;
 {
     GCDAsyncDownloadImageCancel = YES;
+}
+
+
+- (UIImage *)loadCacheImg:(NSString *)imgUrl defaultImg:(UIImage *)defaultImg;
+{
+    if (imgUrl.length < 1)
+    {
+        return defaultImg;
+    }
+    
+    
+    NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
+    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
+    
+        //读取缓存时不加风火轮
+    if (cacheImgData)
+    {
+        return [UIImage imageWithData:cacheImgData];
+    }
+    return defaultImg;
+}
+
+- (NSString *)loadCacheImgPath:(NSString *)imgUrl;
+{
+    if (imgUrl.length < 1)
+    {
+        return nil;
+    }
+    
+    NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
+    
+    return imageFilePath;
 }
 
 @end

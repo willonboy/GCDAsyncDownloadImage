@@ -888,6 +888,20 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
+    UIImage *cachedImg = [SCGIFImageView loadCacheImg:urlString defaultImg:nil];
+    if (cachedImg)
+    {
+        self.image = cachedImg;
+        
+        if (successBlock != NULL)
+        {
+            dispatch_async(dispatch_get_main_queue(), successBlock);
+        }
+        
+        [pool drain];
+        return;
+    }
+    
     self.image = defaultImg;
     
     if (!urlString || urlString.length < 1)

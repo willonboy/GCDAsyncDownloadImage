@@ -1009,6 +1009,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                         //还有可能不是图片
                     else
                     {
+                        [blockUseCurrentDownloadingImgPath release];
                             //嵌套的block会被copy
                         if (failedBlock != NULL)
                         {

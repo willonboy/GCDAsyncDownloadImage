@@ -80,22 +80,8 @@ Class object_getClass(id object);
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
-    UIImage *cachedImg = [self loadCacheImg:urlString defaultImg:nil];
-    if (cachedImg)
-    {
-        self.image = cachedImg;
-        
-        if (successBlock != NULL)
-        {
-            successBlock();
-        }
-        
-        [pool drain];
-        return;
-    }
-    
     self.image = defaultImg;
-    if (!urlString || urlString.length < 1) 
+    if (!urlString || urlString.length < 1)
     {
             //嵌套的block会被copy
         if (failedBlock != NULL)
@@ -107,7 +93,36 @@ Class object_getClass(id object);
         return;
     }
     
+    UIImage *cachedImg = nil;
+        //本地图片
+    if ([urlString hasPrefix:@"/var/mobile/"] || [urlString hasPrefix:@"/Users/"])
+    {
+        NSData *cacheImgData = [NSData dataWithContentsOfFile:urlString];
+        
+            //读取缓存时不加风火轮
+        if (cacheImgData)
+        {
+            cachedImg = [UIImage imageWithData:cacheImgData];
+        }
+    }
+    else
+    {
+        cachedImg = [self loadCacheImg:urlString defaultImg:nil];
+    }
     
+    if (cachedImg)
+    {
+        self.image = cachedImg;
+        
+        if (successBlock != NULL)
+        {
+            dispatch_async(dispatch_get_main_queue(), successBlock);
+        }
+        
+        [pool drain];
+        return;
+    }
+        
     NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
     cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
     

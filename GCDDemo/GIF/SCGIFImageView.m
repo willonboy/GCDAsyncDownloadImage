@@ -888,20 +888,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
-    UIImage *cachedImg = [SCGIFImageView loadCacheImg:urlString defaultImg:nil];
-    if (cachedImg)
-    {
-        self.image = cachedImg;
-        
-        if (successBlock != NULL)
-        {
-            dispatch_async(dispatch_get_main_queue(), successBlock);
-        }
-        
-        [pool drain];
-        return;
-    }
-    
     self.image = defaultImg;
     
     if (!urlString || urlString.length < 1)
@@ -916,6 +902,36 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         return;
     }
     
+    UIImage *cachedImg = nil;
+        //本地图片
+    if ([urlString hasPrefix:@"/var/mobile/"] || [urlString hasPrefix:@"/Users/"])
+    {
+        NSData *cacheImgData = [NSData dataWithContentsOfFile:urlString];
+        
+            //读取缓存时不加风火轮
+        if (cacheImgData)
+        {
+            cachedImg = [UIImage imageWithData:cacheImgData];
+        }
+    }
+    else
+    {
+        cachedImg = [SCGIFImageView loadCacheImg:urlString defaultImg:nil];
+    }
+    
+    if (cachedImg)
+    {
+        self.image = cachedImg;
+        
+        if (successBlock != NULL)
+        {
+            dispatch_async(dispatch_get_main_queue(), successBlock);
+        }
+        
+        [pool drain];
+        return;
+    }
+        
     
     NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
     NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];

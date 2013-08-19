@@ -93,49 +93,32 @@ Class object_getClass(id object);
         return;
     }
     
-    UIImage *cachedImg = nil;
+    NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
         //本地图片
     if ([urlString hasPrefix:@"/var/mobile/"] || [urlString hasPrefix:@"/Users/"])
     {
-        NSData *cacheImgData = [NSData dataWithContentsOfFile:urlString];
-        
-            //读取缓存时不加风火轮
-        if (cacheImgData)
-        {
-            cachedImg = [UIImage imageWithData:cacheImgData];
-        }
+        imageFilePath = urlString;
     }
-    else
-    {
-        cachedImg = [self loadCacheImg:urlString defaultImg:nil];
-    }
-    
-    if (cachedImg)
-    {
-        self.image = cachedImg;
-        
-        if (successBlock != NULL)
-        {
-            dispatch_async(dispatch_get_main_queue(), successBlock);
-        }
-        
-        [pool drain];
-        return;
-    }
-        
-    NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
-    cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
+    UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
     
         //读取缓存时不加风火轮
     if (cachedImg)
     {
-        self.image = cachedImg;
-        
-        if (successBlock != NULL) 
-        {
-            NSLog(@"read cached img");
-            successBlock();
-        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [UIView animateWithDuration:0.4 animations:^{self.alpha = 0.0f;} completion:^(BOOL finished){
+                
+                self.image = cachedImg;
+                [UIView animateWithDuration:0.4 animations:^{
+                    
+                    self.alpha = 1.0f;
+                }];
+            }];
+            
+            if (successBlock != NULL)
+            {
+                successBlock();
+            }
+        });
     }
     else
     {

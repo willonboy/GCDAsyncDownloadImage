@@ -902,38 +902,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         return;
     }
     
-    UIImage *cachedImg = nil;
+    
+    NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
         //本地图片
     if ([urlString hasPrefix:@"/var/mobile/"] || [urlString hasPrefix:@"/Users/"])
     {
-        NSData *cacheImgData = [NSData dataWithContentsOfFile:urlString];
-        
-            //读取缓存时不加风火轮
-        if (cacheImgData)
-        {
-            cachedImg = [UIImage imageWithData:cacheImgData];
-        }
+        imageFilePath = urlString;
     }
-    else
-    {
-        cachedImg = [SCGIFImageView loadCacheImg:urlString defaultImg:nil];
-    }
-    
-    if (cachedImg)
-    {
-        self.image = cachedImg;
-        
-        if (successBlock != NULL)
-        {
-            dispatch_async(dispatch_get_main_queue(), successBlock);
-        }
-        
-        [pool drain];
-        return;
-    }
-        
-    
-    NSString *imageFilePath = [self getCacheFile:[self MD5Value:urlString]];
     NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
     
     if (_currentDownloadingImgFilePath)
@@ -952,7 +927,16 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         if (![SCGIFImageView isGifImage:cacheImgData])
         {
             UIImage *cachedImg = [UIImage imageWithData:cacheImgData];
-            self.image = cachedImg;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [UIView animateWithDuration:0.4 animations:^{self.alpha = 0.0f;} completion:^(BOOL finished){
+                    
+                    self.image = cachedImg;
+                    [UIView animateWithDuration:0.4 animations:^{
+                        
+                        self.alpha = 1.0f;
+                    }];
+                }];
+            });
         }
         else
         {
@@ -962,7 +946,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         if (successBlock != NULL)
         {
             NSLog(@"read cached img");
-            successBlock();
+            dispatch_async(dispatch_get_main_queue(), successBlock);
         }
 
     }
@@ -1010,7 +994,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 indicatorView = nil;
             });
             
-            if (imageData)
+            if (imageData && imageData.length > 3)
             {
                 BOOL isGifImg = [SCGIFImageView isGifImage:imageData];
                     //if it's not gif image

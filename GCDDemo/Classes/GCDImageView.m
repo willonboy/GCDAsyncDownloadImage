@@ -15,6 +15,51 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 
 Class object_getClass(id object);
 
+    //add by william 2012-11-7
+- (id)init
+{
+    self = [super init];
+    if (self)
+    {
+    }
+    selfClass = object_getClass(self);
+    return self;
+}
+
+    //add by william 2012-11-7
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self)
+    {
+    }
+    selfClass = object_getClass(self);
+    return self;
+}
+
+    //add by william 2012-11-7
+- (id)initWithImage:(UIImage *)image
+{
+    self = [super initWithImage:image];
+    if (self)
+    {
+    }
+    selfClass = object_getClass(self);
+    return self;
+}
+
+    //add by william 2012-11-7
+- (id)initWithImage:(UIImage *)image highlightedImage:(UIImage *)highlightedImage
+{
+    self = [super initWithImage:image highlightedImage:highlightedImage];
+    if (self)
+    {
+    }
+    selfClass = object_getClass(self);
+    return self;
+}
+
+
 - (void)dealloc 
 {
     if (_currentDownloadingImgFilePath)
@@ -58,7 +103,8 @@ Class object_getClass(id object);
     {
         [self getImageWithUrl:urlString defaultImg:defaultImg successBlock:NULL failedBlock:NULL];
     }
-    
+
+    selfClass = object_getClass(self);
     return self;
 }
 
@@ -70,7 +116,8 @@ Class object_getClass(id object);
     {
         [self getImageWithUrl:urlString defaultImg:NULL successBlock:successBlock failedBlock:failedBlock];
     }
-    
+
+    selfClass = object_getClass(self);
     return self;
 }
 

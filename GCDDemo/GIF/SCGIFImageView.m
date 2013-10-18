@@ -131,6 +131,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         [self initVars];
     }
+    selfClass = object_getClass(self);
     return self;
 }
 
@@ -142,6 +143,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         [self initVars];
     }
+    selfClass = object_getClass(self);
     return self;
 }
 
@@ -153,6 +155,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         [self initVars];
     }
+    selfClass = object_getClass(self);
     return self;
 }
 
@@ -164,6 +167,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         [self initVars];
     }
+    selfClass = object_getClass(self);
     return self;
 }
 
@@ -244,7 +248,8 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         
         [self loadImageData:gifFilePath];
 	}
-	
+
+    selfClass = object_getClass(self);
 	return self;
 }
 
@@ -866,7 +871,8 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         [self getImageWithUrl:urlString defaultImg:defaultImg successBlock:NULL failedBlock:NULL];
     }
-    
+
+    selfClass = object_getClass(self);
     return self;
 }
 
@@ -878,7 +884,8 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         [self getImageWithUrl:urlString defaultImg:NULL successBlock:successBlock failedBlock:failedBlock];
     }
-    
+
+    selfClass = object_getClass(self);
     return self;
 }
 
@@ -928,14 +935,15 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         {
             UIImage *cachedImg = [UIImage imageWithData:cacheImgData];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [UIView animateWithDuration:0.4 animations:^{self.alpha = 0.0f;} completion:^(BOOL finished){
-                    
-                    self.image = cachedImg;
-                    [UIView animateWithDuration:0.4 animations:^{
-                        
-                        self.alpha = 1.0f;
-                    }];
-                }];
+                self.image = cachedImg;
+//                [UIView animateWithDuration:0.4 animations:^{self.alpha = 0.0f;} completion:^(BOOL finished){
+//                    
+//                    self.image = cachedImg;
+//                    [UIView animateWithDuration:0.4 animations:^{
+//                        
+//                        self.alpha = 1.0f;
+//                    }];
+//                }];
             });
         }
         else

@@ -192,7 +192,13 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         [_currentDownloadingImgFilePath release];
         _currentDownloadingImgFilePath = nil;
     }
-        	
+
+    if (indicatorView)
+    {
+        [indicatorView release];
+        indicatorView = nil;
+    }
+
 	[super dealloc];
 }
 
@@ -916,7 +922,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         imageFilePath = urlString;
     }
-    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
     
     if (_currentDownloadingImgFilePath)
     {
@@ -927,8 +932,9 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     
         //读取缓存时不加风火轮
-    if (cacheImgData)
+    if ([[NSFileManager defaultManager] fileExistsAtPath:imageFilePath])
     {
+        NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
         NSLog(@"isGifImage %@", [SCGIFImageView isGifImage:cacheImgData] ? @"YES" : @"NO");
         
         if (![SCGIFImageView isGifImage:cacheImgData])
@@ -936,6 +942,10 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             UIImage *cachedImg = [UIImage imageWithData:cacheImgData];
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.image = cachedImg;
+                if (!indicatorView)
+                {
+                    [indicatorView stopAnimating];
+                }
             });
         }
         else

@@ -936,14 +936,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
             UIImage *cachedImg = [UIImage imageWithData:cacheImgData];
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.image = cachedImg;
-//                [UIView animateWithDuration:0.4 animations:^{self.alpha = 0.0f;} completion:^(BOOL finished){
-//                    
-//                    self.image = cachedImg;
-//                    [UIView animateWithDuration:0.4 animations:^{
-//                        
-//                        self.alpha = 1.0f;
-//                    }];
-//                }];
             });
         }
         else
@@ -960,14 +952,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     }
     else
     {
-//        for (UIView *view in self.subviews)
-//        {
-//            if ([view isKindOfClass:[UIActivityIndicatorView class]])
-//            {
-//                [view removeFromSuperview];
-//            }
-//        }
-        
         if (!indicatorView)
         {
             indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
@@ -1043,23 +1027,42 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                             if (!isGifImg)
                             {
                                 [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
-                                    
-                                    selfImgView.image = img;
-                                    [UIView animateWithDuration:0.4 animations:^{
-                                        
-                                        selfImgView.alpha = 1.0f;
-                                    }];
+
+                                    if (selfClass == object_getClass(selfImgView))
+                                    {
+                                        selfImgView.image = img;
+                                        [UIView animateWithDuration:0.4 animations:^{
+                                            if (selfClass == object_getClass(selfImgView))
+                                            {
+                                                selfImgView.alpha = 1.0f;
+                                            }
+                                        }];
+                                    }
                                 }];
                             }
                             else
                             {
-                                [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
-                                    
-                                    [selfImgView loadImageByImageDataOrFilePath:nil currentDecodeGifPath:imageFilePath];
-                                    [UIView animateWithDuration:0.4 animations:^{
-                                        
-                                        selfImgView.alpha = 1.0f;
-                                    }];
+                                [UIView animateWithDuration:0.4
+                                                 animations:^{
+
+                                                     if (selfClass == object_getClass(selfImgView))
+                                                     {
+                                                         selfImgView.alpha = 0.0f;
+                                                     }
+                                                 }
+                                                 completion:^(BOOL finished){
+
+                                                     if (selfClass == object_getClass(selfImgView))
+                                                     {
+                                                         [selfImgView loadImageByImageDataOrFilePath:nil currentDecodeGifPath:imageFilePath];
+                                                     }
+                                                     [UIView animateWithDuration:0.4 animations:^{
+
+                                                         if (selfClass == object_getClass(selfImgView))
+                                                         {
+                                                             selfImgView.alpha = 1.0f;
+                                                         }
+                                                     }];
                                 }];
                             }
                         }
@@ -1124,21 +1127,6 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         return [UIImage imageWithData:cacheImgData];
     }
-//    else
-//    {
-//        NSData *imageData = [NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]];
-//        UIImage *img = nil;
-//        
-//        if (imageData)
-//        {
-//            img = [UIImage imageWithData:imageData];
-//            if (img)
-//            {
-//                [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
-//            }
-//            return img;
-//        }
-//    }
     return defaultImg;
 }
 

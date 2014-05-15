@@ -200,7 +200,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     
     NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
-    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
+    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
     
         //读取缓存时不加风火轮
     if (cacheImgData)

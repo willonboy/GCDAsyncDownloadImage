@@ -226,7 +226,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     if (gifImageData.length < 4)
     {
-        gifImageData = [NSData dataWithContentsOfFile:gifFilePath];
+        gifImageData = [NSData dataWithContentsOfFile:gifFilePath options:NSDataReadingMappedIfSafe error:nil];
         if (gifImageData.length < 4)
         {
             return nil;
@@ -273,7 +273,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         
         if (gifData.length < 4)
         {
-            gifData = [NSData dataWithContentsOfFile:currentDecodeGifPath];
+            gifData = [NSData dataWithContentsOfFile:currentDecodeGifPath options:NSDataReadingMappedIfSafe error:nil];
             if (gifData.length < 4)
             {
                 return;
@@ -934,7 +934,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         //读取缓存时不加风火轮
     if ([[NSFileManager defaultManager] fileExistsAtPath:imageFilePath])
     {
-        NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
+        NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
         NSLog(@"isGifImage %@", [SCGIFImageView isGifImage:cacheImgData] ? @"YES" : @"NO");
         
         if (![SCGIFImageView isGifImage:cacheImgData])
@@ -1130,7 +1130,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     
     
     NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
-    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath];
+    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
     
         //读取缓存时不加风火轮
     if (cacheImgData)

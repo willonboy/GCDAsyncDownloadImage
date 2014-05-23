@@ -59,6 +59,23 @@ Class object_getClass(id object);
     return self;
 }
 
+    //GCDImageView通过xib添加时将会走该方法
+- (id)initWithCoder:(NSCoder *)aDecoder
+{
+    NSLog(@"image self %@", self);
+    self = [super initWithCoder:aDecoder];
+    NSLog(@"image self %@", self);
+    selfClass = object_getClass(self);
+    return self;
+}
+
+//    //GCDImageView通过xib添加时将会走该方法 与initWithCoder:选择实现一个即可, initWithCoder:会先与awakeFromNib方法被调用
+//- (void)awakeFromNib
+//{
+//    [super awakeFromNib];
+//    selfClass = object_getClass(self);
+//}
+
 
 - (void)dealloc 
 {

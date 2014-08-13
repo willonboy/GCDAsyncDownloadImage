@@ -161,6 +161,16 @@
     return cell;
 }
 
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
+{
+    if (!decelerate)
+    {
+        for (GifCell *Cell in _tableView.visibleCells)
+        {
+            [Cell startLoadGif];
+        }
+    }
+}
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView; 
 {

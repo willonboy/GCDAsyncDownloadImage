@@ -9,6 +9,54 @@
 #import "SCGIFImageView.h"
 #import <CommonCrypto/CommonDigest.h>
 
+
+
+
+//    // PNG signature bytes and data (below)
+//static unsigned char kPNGSignatureBytes[8] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+//static NSData *kPNGSignatureData = nil;
+//
+//BOOL ImageDataHasPNGPreffix(NSData *data);
+//
+//BOOL ImageDataHasPNGPreffix(NSData *data) {
+//    NSUInteger pngSignatureLength = [kPNGSignatureData length];
+//    if ([data length] >= pngSignatureLength) {
+//        if ([[data subdataWithRange:NSMakeRange(0, pngSignatureLength)] isEqualToData:kPNGSignatureData]) {
+//            return YES;
+//        }
+//    }
+//    
+//    return NO;
+//}
+//NSData *data = nil;
+//    // We need to determine if the image is a PNG or a JPEG
+//    // PNGs are easier to detect because they have a unique signature (http://www.w3.org/TR/PNG-Structure.html)
+//    // The first eight bytes of a PNG file always contain the following (decimal) values:
+//    // 137 80 78 71 13 10 26 10
+//
+//    // We assume the image is PNG, in case the imageData is nil (i.e. if trying to save a UIImage directly),
+//    // we will consider it PNG to avoid loosing the transparency
+//BOOL imageIsPng = YES;
+//
+//    // But if we have an image data, we will look at the preffix
+//if ([imageData length] >= [kPNGSignatureData length])
+//{
+//    imageIsPng = ImageDataHasPNGPreffix(imageData);
+//}
+//
+//if (imageIsPng)
+//{
+//    data = UIImagePNGRepresentation(img);
+//}
+//else
+//{
+//    data = UIImageJPEGRepresentation(img, (CGFloat)1.0);
+//}
+//
+//
+
+
+
 @implementation AnimatedGifFrame
 @synthesize data, delay, disposalMethod, area, header;
 
@@ -64,6 +112,15 @@ Class object_getClass(id object);
     //add by william 2012-11-7
 static  BOOL GCDAsyncDownloadImageCancel = NO;
 
+static NSCache *_memCache = nil;
+
++ (void)initialize
+{
+    if (self == [SCGIFImageView class]) {
+        
+        _memCache = [NSCache new];
+    }
+}
 
     //add by william 2012-11-9
 - (void)destoryVars
@@ -748,7 +805,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 		bBuffer[4] |= 0x08;
 	}
 	
-    NSMutableData *GIF_string = [NSMutableData dataWithData:[[NSString stringWithString:@"GIF89a"] dataUsingEncoding: NSUTF8StringEncoding]];
+    NSMutableData *GIF_string = [NSMutableData dataWithData:[@"GIF89a" dataUsingEncoding: NSUTF8StringEncoding]];
 	[GIF_screen setData:[NSData dataWithBytes:bBuffer length:blength]];
     [GIF_string appendData: GIF_screen];
     
@@ -946,9 +1003,26 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     }
     _currentDownloadingImgFilePath = [imageFilePath copy];
     
-    
+    UIImage *memCacheImg = [_memCache objectForKey:imageFilePath];
+        //GIF图片不缓存, 所以这里不用判断是否是gif图片
+    if (memCacheImg)
+    {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.image = memCacheImg;
+            if (!indicatorView)
+            {
+                [indicatorView stopAnimating];
+            }
+        });
+        
+        if (successBlock != NULL)
+        {
+            NSLog(@"read memery cached img");
+            dispatch_async(dispatch_get_main_queue(), successBlock);
+        }
+    }
         //读取缓存时不加风火轮
-    if ([[NSFileManager defaultManager] fileExistsAtPath:imageFilePath])
+    else if ([[NSFileManager defaultManager] fileExistsAtPath:imageFilePath])
     {
         NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
         NSLog(@"isGifImage %@", [SCGIFImageView isGifImage:cacheImgData] ? @"YES" : @"NO");
@@ -956,6 +1030,8 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         if (![SCGIFImageView isGifImage:cacheImgData])
         {
             UIImage *cachedImg = [UIImage imageWithData:cacheImgData];
+                //添加到内存缓存
+            [_memCache setObject:cachedImg forKey:imageFilePath];
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.image = cachedImg;
                 if (!indicatorView)
@@ -966,7 +1042,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         }
         else
         {
-            [self loadImageByImageDataOrFilePath:nil currentDecodeGifPath:imageFilePath];
+            [self loadImageByImageDataOrFilePath:cacheImgData currentDecodeGifPath:imageFilePath];
         }
         
         if (successBlock != NULL)
@@ -987,7 +1063,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         }
         
             //避免retain self
-        __block SCGIFImageView *selfImgView = self;
+        __block SCGIFImageView *_self = self;
         
         dispatch_queue_t downloadQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         void (^downloadBlock)(void) = ^(void){
@@ -1022,7 +1098,8 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                         //如果请求到的是图片
                     if (img)
                     {
-                        [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
+                        [_memCache setObject:img forKey:imageFilePath];
+                        [imageData writeToFile:imageFilePath atomically:YES];
                     }
                         //还有可能不是图片
                     else
@@ -1048,19 +1125,19 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         
-                        if (selfImgView && selfClass == object_getClass(selfImgView))
+                        if (_self && selfClass == object_getClass(_self))
                         {
                             if (!isGifImg)
                             {
-                                [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
+                                [UIView animateWithDuration:0.4 animations:^{_self.alpha = 0.0f;} completion:^(BOOL finished){
 
-                                    if (selfClass == object_getClass(selfImgView))
+                                    if (selfClass == object_getClass(_self))
                                     {
-                                        selfImgView.image = img;
+                                        _self.image = img;
                                         [UIView animateWithDuration:0.4 animations:^{
-                                            if (selfClass == object_getClass(selfImgView))
+                                            if (selfClass == object_getClass(_self))
                                             {
-                                                selfImgView.alpha = 1.0f;
+                                                _self.alpha = 1.0f;
                                             }
                                         }];
                                     }
@@ -1071,22 +1148,22 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                                 [UIView animateWithDuration:0.4
                                                  animations:^{
 
-                                                     if (selfClass == object_getClass(selfImgView))
+                                                     if (selfClass == object_getClass(_self))
                                                      {
-                                                         selfImgView.alpha = 0.0f;
+                                                         _self.alpha = 0.0f;
                                                      }
                                                  }
                                                  completion:^(BOOL finished){
 
-                                                     if (selfClass == object_getClass(selfImgView))
+                                                     if (selfClass == object_getClass(_self))
                                                      {
-                                                         [selfImgView loadImageByImageDataOrFilePath:nil currentDecodeGifPath:imageFilePath];
+                                                         [_self loadImageByImageDataOrFilePath:nil currentDecodeGifPath:imageFilePath];
                                                      }
                                                      [UIView animateWithDuration:0.4 animations:^{
 
-                                                         if (selfClass == object_getClass(selfImgView))
+                                                         if (selfClass == object_getClass(_self))
                                                          {
-                                                             selfImgView.alpha = 1.0f;
+                                                             _self.alpha = 1.0f;
                                                          }
                                                      }];
                                 }];
@@ -1143,17 +1220,20 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         return defaultImg;
     }
-    
-    
     NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
-    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
-    
-        //读取缓存时不加风火轮
-    if (cacheImgData)
+    UIImage *img = [_memCache objectForKey:imageFilePath];
+    if (!img)
     {
-        return [UIImage imageWithData:cacheImgData];
+        NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
+            //读取缓存时不加风火轮
+        if (cacheImgData)
+        {
+            img = [UIImage imageWithData:cacheImgData];
+            [_memCache setObject:img forKey:imageFilePath];
+        }
     }
-    return defaultImg;
+    
+    return !img ? defaultImg : img;
 }
 
 + (NSString *)loadCacheImgPath:(NSString *)imgUrl;

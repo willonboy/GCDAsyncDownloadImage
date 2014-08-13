@@ -12,6 +12,16 @@
 @implementation UIImageView(GCDImgViewExt)
 static  BOOL GCDAsyncDownloadImageCancel = NO;
 
+static NSCache *_memCache = nil;
+
++ (void)initialize
+{
+    if (self == [UIImageView class]) {
+        
+        _memCache = [NSCache new];
+    }
+}
+
     //对要请求的图片路径进行MD5签名
 - (NSString *)MD5Value:(NSString *)str
 {
@@ -72,7 +82,12 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
     {
         imageFilePath = urlString;
     }
-    UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
+    UIImage *cachedImg = [_memCache objectForKey:imageFilePath];
+    
+    if (!cachedImg)
+    {
+        cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
+    }
     
         //读取缓存时不加风火轮
     if (cachedImg)
@@ -109,7 +124,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         [indicatorView startAnimating];
         
             //避免retain self
-        __block UIImageView *selfImgView = self;
+        __block UIImageView *_self = self;
             //主要是用于区别多次重用的UIImageView(如果UIImageView频繁重用请在重用时重新设置tag属性值)
         long imageViewTag = self.tag;
         
@@ -122,7 +137,7 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 return;
             }
             
-            UIImage *img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]]];
+            NSData *imageData = [NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]];
                  
             dispatch_async(dispatch_get_main_queue(), ^{
                     //下载结束 停止风火轮
@@ -132,22 +147,20 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
                 indicatorView = nil;
             });
             
-            if (img) 
+            UIImage *img = [UIImage imageWithData:imageData];
+            if (imageData && img)
             { 
-                [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
-                
-                    //NSLog(@"selfImgView.tag %ld== imageViewTag %ld", selfImgView.tag, imageViewTag);
-                
-                if (selfImgView && selfImgView.tag == imageViewTag)
+                [imageData writeToFile:imageFilePath atomically:YES];
+                if (_self && _self.tag == imageViewTag)
                 {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         
-                        [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
+                        [UIView animateWithDuration:0.4 animations:^{_self.alpha = 0.0f;} completion:^(BOOL finished){
                             
-                            selfImgView.image = img;
+                            _self.image = img;
                             [UIView animateWithDuration:0.4 animations:^{
                                 
-                                selfImgView.alpha = 1.0f;
+                                _self.alpha = 1.0f;
                             }];
                         }];
                         
@@ -198,16 +211,20 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
         return defaultImg;
     }
     
-    
     NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
-    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
-    
-        //读取缓存时不加风火轮
-    if (cacheImgData)
+    UIImage *img = [_memCache objectForKey:imageFilePath];
+    if (!img)
     {
-        return [UIImage imageWithData:cacheImgData];
+        NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
+            //读取缓存时不加风火轮
+        if (cacheImgData)
+        {
+            img = [UIImage imageWithData:cacheImgData];
+            [_memCache setObject:img forKey:imageFilePath];
+        }
     }
-    return defaultImg;
+    
+    return !img ? defaultImg : img;
 }
 
 - (NSString *)loadCacheImgPath:(NSString *)imgUrl;

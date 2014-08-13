@@ -15,6 +15,16 @@ static  BOOL GCDAsyncDownloadImageCancel = NO;
 
 Class object_getClass(id object);
 
+static NSCache *_memCache = nil;
+
++ (void)initialize
+{
+    if (self == [GCDImageView class]) {
+        
+        _memCache = [NSCache new];
+    }
+}
+
     //add by william 2012-11-7
 - (id)init
 {
@@ -163,8 +173,12 @@ Class object_getClass(id object);
     {
         imageFilePath = urlString;
     }
-    UIImage *cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
+    UIImage *cachedImg = [_memCache objectForKey:imageFilePath];
     
+    if (!cachedImg)
+    {
+         cachedImg = [[[UIImage alloc] initWithContentsOfFile:imageFilePath] autorelease];
+    }
         //读取缓存时不加风火轮
     if (cachedImg)
     {
@@ -202,7 +216,7 @@ Class object_getClass(id object);
         }
         
             //避免retain self
-        __block UIImageView *selfImgView = self;
+        __block UIImageView *_self = self;
         
         dispatch_queue_t downloadQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         void (^downloadBlock)(void) = ^(void){
@@ -216,7 +230,7 @@ Class object_getClass(id object);
                 return;
             }
             
-            UIImage *img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]]];
+            NSData *imageData = [NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                     //下载结束 停止风火轮
@@ -226,9 +240,11 @@ Class object_getClass(id object);
                 indicatorView = nil;
             });
             
-            if (img) 
-            { 
-                [UIImagePNGRepresentation(img) writeToFile:imageFilePath atomically:YES];
+            UIImage *img = [UIImage imageWithData:imageData];
+            if (imageData && img)
+            {
+                [imageData writeToFile:imageFilePath atomically:YES];
+                [_memCache setObject:img forKey:imageFilePath];
                 
                 NSLog(@"currentDownloadingImgFilePath %@, imageFilePath %@", blockUseCurrentDownloadingImgPath, _currentDownloadingImgFilePath);
                     //当UIImageView被重用时,_currentDownloadingImgFilePath将会被重新赋值并且在block有体显(值发生改变),但blockUseCurrentDownloadingImgPath是block变量,它一直不变
@@ -237,14 +253,14 @@ Class object_getClass(id object);
                 {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         
-                        if (selfImgView && selfClass == object_getClass(selfImgView))
+                        if (_self && selfClass == object_getClass(_self))
                         {
-                            [UIView animateWithDuration:0.4 animations:^{selfImgView.alpha = 0.0f;} completion:^(BOOL finished){
+                            [UIView animateWithDuration:0.4 animations:^{_self.alpha = 0.0f;} completion:^(BOOL finished){
                                 
-                                selfImgView.image = img;
+                                _self.image = img;
                                 [UIView animateWithDuration:0.4 animations:^{
                                     
-                                    selfImgView.alpha = 1.0f;
+                                    _self.alpha = 1.0f;
                                 }];
                             }];
                         }
@@ -299,16 +315,20 @@ Class object_getClass(id object);
         return defaultImg;
     }
     
-    
     NSString *imageFilePath = [NSString stringWithFormat:@"%@/Library/Caches/%@", NSHomeDirectory(),[self MD5Value:imgUrl]];
-    NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
-    
-        //读取缓存时不加风火轮
-    if (cacheImgData)
+    UIImage *img = [_memCache objectForKey:imageFilePath];
+    if (!img)
     {
-        return [UIImage imageWithData:cacheImgData];
+        NSData *cacheImgData = [NSData dataWithContentsOfFile:imageFilePath options:NSDataReadingMappedIfSafe error:nil];
+            //读取缓存时不加风火轮
+        if (cacheImgData)
+        {
+            img = [UIImage imageWithData:cacheImgData];
+            [_memCache setObject:img forKey:imageFilePath];
+        }
     }
-    return defaultImg;
+
+    return !img ? defaultImg : img;
 }
 
 - (NSString *)loadCacheImgPath:(NSString *)imgUrl;
